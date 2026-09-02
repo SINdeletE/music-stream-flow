@@ -7,16 +7,12 @@ class EventType(Enum):
     session_started         = 'session_started'
     session_ended           = 'session_ended'
     track_started           = 'track_started'
-    track_ended             = 'track_ended'
     track_paused            = 'track_paused'
-    track_resumed           = 'track_resumed'
-    track_skipped           = 'track_skipped'
-    track_seeked            = 'track_seeked'
     track_completed         = 'track_completed'
+    track_skipped           = 'track_skipped' # early complete track
+    track_seeked            = 'track_seeked'
     track_liked             = 'track_liked'
     track_disliked          = 'track_disliked'
-    track_like_removed      = 'track_like_removed'
-    track_added_to_playlist = 'track_added_to_playlist'
 
 @dataclass
 class AnalyticsEvent:

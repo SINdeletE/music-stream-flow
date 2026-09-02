@@ -24,9 +24,7 @@ TRACK_EVENT_TYPES = set(EventType) - SESSION_EVENT_TYPES
 
 PLAYBACK_EVENT_TYPES = {
     EventType.track_started,
-    EventType.track_ended,
     EventType.track_paused,
-    EventType.track_resumed,
     EventType.track_skipped,
     EventType.track_completed,
 }

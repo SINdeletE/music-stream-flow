@@ -1,0 +1,74 @@
+@startuml
+
+entity installation {
+    *id: uuid
+    --
+    *device_id: uuid
+    *app_release_id: uuid
+    *installed_at: timestampz
+}
+entity device {
+    *id: uuid
+    --
+    *name: varchar
+    *version: varchar
+    *os: varchar
+    *os_version: varchar
+}
+entity app_release {
+    *id: uuid
+    --
+    *platform: varchar
+    *version: varchar
+    *build: varchar
+    *released_at: timestampz
+}
+
+entity track {
+    *id: uuid
+    --
+    *name: varchar
+    image_url: varchar
+    *created_at: timestampz
+    *updated_at: timestampz
+}
+entity genre {
+    *id: uuid
+    --
+    *name: varchar
+    *created_at: timestampz
+}
+entity artist {
+    *id: uuid
+    --
+    *nickname: varchar
+    name: varchar
+    middle_name: varchar
+    last_name: varchar
+    country_code: varchar(2)
+    biography: varchar
+    image_url: varchar
+    is_verified: boolean
+    *created_at: timestampz
+    *updated_at: timestampz
+}
+entity release {
+    *id: uuid
+    --
+    *name: varchar
+    *is_available: bool
+    *released_at: timestampz
+    *created_at: timestampz
+    *updated_at: timestampz
+}
+
+installation }o--|| device
+installation }o--|| app_release
+
+track }o--|{ genre
+track }o--|{ artist
+track }o--|{ release
+
+artist }|--o{ release
+
+@enduml
