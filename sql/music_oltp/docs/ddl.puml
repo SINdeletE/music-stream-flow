@@ -35,7 +35,7 @@ entity track {
     * id: uuid <<PK>>
     --
     * name: varchar(255)
-    * duration_ms: int
+    * duration_ms: integer
     image_url: varchar(255)
     * is_available: boolean = false
     * created_at: timestamptz = now()
