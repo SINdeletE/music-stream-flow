@@ -1,74 +1,132 @@
 @startuml
 
-entity installation {
-    *id: uuid
-    --
-    *device_id: uuid
-    *app_release_id: uuid
-    *installed_at: timestampz
-}
 entity device {
-    *id: uuid
+    * id: uuid <<PK>>
     --
-    *name: varchar
-    *version: varchar
-    *os: varchar
-    *os_version: varchar
+    * name: varchar(128)
+    * device_version: varchar(16)
+    * os_name: varchar(32)
+    * os_version: varchar(32)
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
 }
+
 entity app_release {
-    *id: uuid
+    * id: uuid <<PK>>
     --
-    *platform: varchar
-    *version: varchar
-    *build: varchar
-    *released_at: timestampz
+    * platform: varchar(16)
+    * app_release_version: varchar(16)
+    * build: varchar(32)
+    * released_at: timestamptz
+    * created_at: timestamptz = now()
+}
+
+entity installation {
+    * id: uuid <<PK>>
+    --
+    * device_id: uuid <<FK>>
+    * app_release_id: uuid <<FK>>
+    * installed_at: timestamptz
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
 }
 
 entity track {
-    *id: uuid
+    * id: uuid <<PK>>
     --
-    *name: varchar
-    image_url: varchar
-    *created_at: timestampz
-    *updated_at: timestampz
+    * name: varchar(255)
+    * duration_ms: int
+    image_url: varchar(255)
+    * is_available: boolean = false
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
+    deleted_at: timestamptz
 }
+
 entity genre {
-    *id: uuid
+    * id: uuid <<PK>>
     --
-    *name: varchar
-    *created_at: timestampz
+    * name: varchar(64)
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
+    deleted_at: timestamptz
 }
+
 entity artist {
-    *id: uuid
+    * id: uuid <<PK>>
     --
-    *nickname: varchar
-    name: varchar
-    middle_name: varchar
-    last_name: varchar
+    * nickname: varchar(255)
+    name: varchar(255)
+    middle_name: varchar(255)
+    last_name: varchar(255)
     country_code: varchar(2)
-    biography: varchar
-    image_url: varchar
-    is_verified: boolean
-    *created_at: timestampz
-    *updated_at: timestampz
+    biography: varchar(512)
+    image_url: varchar(255)
+    * is_verified: boolean = false
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
+    deleted_at: timestamptz
 }
+
 entity release {
-    *id: uuid
+    * id: uuid <<PK>>
     --
-    *name: varchar
-    *is_available: bool
-    *released_at: timestampz
-    *created_at: timestampz
-    *updated_at: timestampz
+    * name: varchar(255)
+    * is_available: boolean = false
+    * released_at: timestamptz
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
+    deleted_at: timestamptz
 }
 
-installation }o--|| device
-installation }o--|| app_release
+entity track_genre {
+    * track_id: uuid <<PK, FK>>
+    * genre_id: uuid <<PK, FK>>
+    --
+    * created_at: timestamptz = now()
+}
 
-track }o--|{ genre
-track }o--|{ artist
-track }o--|{ release
+entity track_artist {
+    * track_id: uuid <<PK, FK>>
+    * artist_id: uuid <<PK, FK>>
+    --
+    * artist_number: integer
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
+}
 
-artist }|--o{ release
+entity track_release {
+    * track_id: uuid <<PK, FK>>
+    * release_id: uuid <<PK, FK>>
+    --
+    * track_number: integer
+    disc_number: integer
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
+}
+
+entity artist_release {
+    * artist_id: uuid <<PK, FK>>
+    * release_id: uuid <<PK, FK>>
+    --
+    * artist_number: integer
+    * created_at: timestamptz = now()
+    * updated_at: timestamptz = now()
+}
+
+device ||--o{ installation : RESTRICT
+app_release ||--o{ installation : RESTRICT
+
+track ||--o{ track_genre : CASCADE
+genre ||--o{ track_genre : CASCADE
+
+track ||--o{ track_artist : CASCADE
+artist ||--o{ track_artist : CASCADE
+
+track ||--o{ track_release : CASCADE
+release ||--o{ track_release : CASCADE
+
+artist ||--o{ artist_release : CASCADE
+release ||--o{ artist_release : CASCADE
 
 @enduml
