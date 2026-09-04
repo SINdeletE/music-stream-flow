@@ -1,6 +1,7 @@
 .DS_Store
 .vscode
 *.prompt
+*/clickhouse0*/
 
 # Airflow
 airflow/config/
