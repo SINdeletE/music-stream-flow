@@ -2,6 +2,14 @@
 .vscode
 *.prompt
 
+# Airflow
+airflow/config/
+airflow/dags/
+airflow/logs/
+airflow/plugins/
+
+# --------- DEFAULT PYTHON GITHUB .GITIGNORE ---------
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
