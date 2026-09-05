@@ -1,132 +1,176 @@
 @startuml
 
-entity device {
-    * id: uuid <<PK>>
+' Dimentions
+entity dim_device {
+    * device_sk: int <<PK>>
     --
-    * name: varchar(128)
+    * device_name: varchar(128)
     * device_version: varchar(16)
-    * os_name: varchar(32)
-    * os_version: varchar(32)
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
+    * device_os_name: varchar(32)
+    * device_os_version: varchar(32)
+
+    * loaded_at: timestamptz
+    * updated_at: timestamptz
+    deleted_at: timestamptz
+
 }
 
-entity app_release {
-    * id: uuid <<PK>>
+entity dim_app_release {
+    * app_release_sk: int <<PK>>
     --
+    * app_release_id: varchar(64)
     * platform: varchar(16)
     * app_release_version: varchar(16)
     * build: varchar(32)
     * released_at: timestamptz
-    * created_at: timestamptz = now()
+
+    * loaded_at: timestamptz
+    * updated_at: timestamptz
+    deleted_at: timestamptz
+
 }
 
-entity installation {
-    * id: uuid <<PK>>
+entity dim_track {
+    * track_sk: int <<PK>>
     --
-    * device_id: uuid <<FK>>
-    * app_release_id: uuid <<FK>>
-    * installed_at: timestamptz
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
-}
-
-entity track {
-    * id: uuid <<PK>>
-    --
+    * track_id: varchar(64)
     * name: varchar(255)
-    * duration_ms: integer
-    image_url: varchar(255)
+    * duration_ms: int
     * is_available: boolean = false
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
+    * track_created_at: timestamptz
+    track_deleted_at: timestamptz
+
+    * loaded_at: timestamptz
+    * updated_at: timestamptz
     deleted_at: timestamptz
 }
 
-entity genre {
-    * id: uuid <<PK>>
+entity dim_artist {
+    * artist_sk: int <<PK>>
     --
-    * name: varchar(64)
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
-    deleted_at: timestamptz
-}
-
-entity artist {
-    * id: uuid <<PK>>
-    --
+    * artist_id: varchar(64)
     * nickname: varchar(255)
     name: varchar(255)
     middle_name: varchar(255)
     last_name: varchar(255)
     country_code: varchar(2)
     biography: varchar(512)
-    image_url: varchar(255)
-    * is_verified: boolean = false
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
+    * is_verified: boolean
+    * created_at: timestamptz
+    deleted_at: timestamptz
+
+    * loaded_at: timestamptz
+    * updated_at: timestamptz
     deleted_at: timestamptz
 }
 
-entity release {
-    * id: uuid <<PK>>
+entity dim_genre {
+    * genre_sk: int <<PK>>
     --
+    * genre_id: varchar(64)
+    * name: varchar(64)
+
+    * loaded_at: timestamptz
+    * updated_at: timestamptz
+    deleted_at: timestamptz
+}
+
+entity dim_release {
+    * release_sk: int <<PK>>
+    --
+    * release_id: varchar(64)
     * name: varchar(255)
     * is_available: boolean = false
     * released_at: timestamptz
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
+
+    * loaded_at: timestamptz
+    * updated_at: timestamptz
     deleted_at: timestamptz
 }
 
-entity track_genre {
-    * track_id: uuid <<PK, FK>>
-    * genre_id: uuid <<PK, FK>>
+entity dim_event_type {
+    * event_type_sk: int <<PK>>
     --
-    * created_at: timestamptz = now()
+    * name: varchar(64)
+
+    * loaded_at: timestamptz
+    * updated_at: timestamptz
+    deleted_at: timestamptz
 }
 
-entity track_artist {
-    * track_id: uuid <<PK, FK>>
-    * artist_id: uuid <<PK, FK>>
+' Bridges
+entity brg_device_app_release {
+    * device_sk: int <<PK, FK>>
+    * app_release_sk: int <<PK, FK>>
     --
-    * artist_number: integer
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
+
+    * loaded_at: timestamptz
 }
 
-entity track_release {
-    * track_id: uuid <<PK, FK>>
-    * release_id: uuid <<PK, FK>>
+entity brg_track_genre {
+    * track_sk: int <<PK, FK>>
+    * genre_sk: int <<PK, FK>>
     --
-    * track_number: integer
-    disc_number: integer
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
 }
 
-entity artist_release {
-    * artist_id: uuid <<PK, FK>>
-    * release_id: uuid <<PK, FK>>
+entity brg_track_artist {
+    * track_sk: int <<PK, FK>>
+    * artist_sk: int <<PK, FK>>
     --
-    * artist_number: integer
-    * created_at: timestamptz = now()
-    * updated_at: timestamptz = now()
+    * artist_number: int
 }
 
-device ||--o{ installation : RESTRICT
-app_release ||--o{ installation : RESTRICT
+entity brg_track_release {
+    * track_sk: int <<PK, FK>>
+    * release_sk: int <<PK, FK>>
+    --
+    * track_number: int
+    disc_number: int
+}
 
-track ||--o{ track_genre : CASCADE
-genre ||--o{ track_genre : CASCADE
+entity brg_artist_release {
+    * artist_sk: int <<PK, FK>>
+    * release_sk: int <<PK, FK>>
+    --
+    * artist_number: int
+}
 
-track ||--o{ track_artist : CASCADE
-artist ||--o{ track_artist : CASCADE
+' Fact
+entity fct_events {
+    * event_sk: int <<PK>>
+    --
+    * event_type_sk: int <<FK>>
+    * device_sk: int <<FK>>
+    * app_release_sk: int <<FK>>
+    * installation_sk: int <<FK>>
+    * track_sk: int <<FK>>
 
-track ||--o{ track_release : CASCADE
-release ||--o{ track_release : CASCADE
+    * event_timestamp: timestamptz
+    * received_at: timestamptz
+    * loaded_at: timestamptz
+    * updated_at: timestamptz
+}
+' Fact to dimensions (including Unknown / Not applicable members)
+dim_event_type ||--o{ fct_events : event_type_sk
+dim_device ||--o{ fct_events : device_sk
+dim_app_release ||--o{ fct_events : app_release_sk
+dim_installation ||--o{ fct_events : installation_sk
+dim_track ||--o{ fct_events : track_sk
 
-artist ||--o{ artist_release : CASCADE
-release ||--o{ artist_release : CASCADE
+' Dimensions to bridges
+dim_device ||--|{ brg_device_app_release : device_sk
+dim_app_release ||--o{ brg_device_app_release : app_release_sk
+
+dim_track ||--|{ brg_track_genre : track_sk
+dim_genre ||--o{ brg_track_genre : genre_sk
+
+dim_track ||--|{ brg_track_artist : track_sk
+dim_artist ||--o{ brg_track_artist : artist_sk
+
+dim_track ||--|{ brg_track_release : track_sk
+dim_release ||--o{ brg_track_release : release_sk
+
+dim_artist ||--|{ brg_artist_release : artist_sk
+dim_release ||--o{ brg_artist_release : release_sk
 
 @enduml
