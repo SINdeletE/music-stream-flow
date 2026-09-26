@@ -1,0 +1,34 @@
+@startuml C4-L1-music-stream-flow
+!include <C4/C4_Container>
+Person(userAlias, "User", "Service user")
+
+System_Boundary(musicaAlias, "Musica", "Music Service") {
+    Container(musicaWebAppAlias, "Web App", "-",  "Musica web app")
+    Container(musicaIOSAlias, "iOS App", "-",  "Musica web app")
+    Container(musicaAndroidAlias, "Android App", "-",  "Musica web app")
+    Container(musicaDesktopAlias, "Desktop App", "-",  "Musica web app")
+
+    Container(musicaBackendAlias, "Backend", "-", "Musica backend")
+
+    Container(musicaDatabaseAlias, "OLTP Database", "PostgreSQL", "Musica OLTP Database")
+}
+
+System_Boundary(musicStreamFlowAlias, "Music stream flow", "Musica Analytics Service") {
+    Container(musicaDWHDatabaseAlias, "DWH Database", "Clickhouse", "Musica OLTP Database")
+
+    Container(musicaEventBusDatabaseAlias, "Analytics event bus", "Kafka", "Musica Analytics event bus")
+    Container(musicaPipelineOrchestratorDatabaseAlias, "Pipeline orchestrator", "Airflow", "Musica Pipeline orchestrator")
+}
+
+Rel(userAlias, musicaWebAppAlias, "Uses")
+Rel(userAlias, musicaIOSAlias, "Uses")
+Rel(userAlias, musicaAndroidAlias, "Uses")
+Rel(userAlias, musicaDesktopAlias, "Uses")
+
+Rel(musicaWebAppAlias, musicaBackendAlias, "Uses")
+Rel(musicaIOSAlias, musicaBackendAlias, "Uses")
+Rel(musicaAndroidAlias, musicaBackendAlias, "Uses")
+Rel(musicaDesktopAlias, musicaBackendAlias, "Uses")
+
+Rel(musicaBackendAlias, musicaDatabaseAlias, "Read/Write")
+@enduml

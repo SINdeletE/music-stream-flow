@@ -1,0 +1,8 @@
+@startuml C4-L1-music-stream-flow
+!include <C4/C4_Container>
+Person(userAlias, "User", "Service user")
+
+System(musicaAlias, "Music", "Music Service")
+
+Rel(userAlias, musicaAlias, "Uses")
+@enduml

@@ -4,13 +4,22 @@ CREATE SCHEMA IF NOT EXISTS music_oltp;
 
 CREATE TABLE IF NOT EXISTS music_oltp.device (
     id UUID PRIMARY KEY,
+    user_id VARCHAR(128) NOT NULL,
     name VARCHAR(128) NOT NULL,
     device_version VARCHAR(16) NOT NULL,
-    os_name VARCHAR(32) NOT NULL,
-    os_version VARCHAR(32) NOT NULL,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS music_oltp.device_os_history (
+    id UUID PRIMARY KEY,
+    device_id UUID NOT NULL REFERENCES music_oltp.device(id) ON DELETE CASCADE,
+    os_name VARCHAR(32) NOT NULL,
+    os_version VARCHAR(32) NOT NULL,
+    valid_from TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS music_oltp.app_release (

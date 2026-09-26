@@ -3,12 +3,22 @@
 entity device {
     * id: uuid <<PK>>
     --
+    * user_id: varchar(128)
     * name: varchar(128)
     * device_version: varchar(16)
-    * os_name: varchar(32)
-    * os_version: varchar(32)
     * created_at: timestamptz = now()
     * updated_at: timestamptz = now()
+}
+
+entity device_os_history {
+    * id: uuid <<PK>>
+    --
+    * device_id: uuid <<FK>>
+    * os_name: varchar(32)
+    * os_version: varchar(32)
+    * valid_from: timestamptz = now()
+
+    * created_at: timestamptz = now()
 }
 
 entity app_release {
@@ -114,6 +124,7 @@ entity artist_release {
     * updated_at: timestamptz = now()
 }
 
+device ||--|{ device_os_history : CASCADE
 device ||--o{ installation : RESTRICT
 app_release ||--o{ installation : RESTRICT
 
