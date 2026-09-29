@@ -6,11 +6,7 @@ from enum import Enum
 class EventType(Enum):
     session_started         = 'session_started'
     session_ended           = 'session_ended'
-    track_started           = 'track_started'
-    track_paused            = 'track_paused'
-    track_completed         = 'track_completed'
-    track_skipped           = 'track_skipped' # early complete track
-    track_seeked            = 'track_seeked'
+    track_selected          = 'track_selected'
     track_liked             = 'track_liked'
     track_disliked          = 'track_disliked'
 

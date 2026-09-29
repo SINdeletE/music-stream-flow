@@ -37,6 +37,8 @@
     <remote_servers>
         <company_cluster>
             <shard>
+                <internal_replication>true</internal_replication>
+
                 <replica>
                     <host>clickhouse01</host>
                     <port>9000</port>
@@ -47,6 +49,8 @@
                 </replica>
             </shard>
             <shard>
+                <internal_replication>true</internal_replication>
+
                 <replica>
                     <host>clickhouse03</host>
                     <port>9000</port>

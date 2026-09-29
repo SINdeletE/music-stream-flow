@@ -110,24 +110,6 @@ entity dim_event_type {
     deleted_at: timestamptz
 }
 
-entity dim_playback_type {
-    * playback_type_sk: bigint <<PK>>
-    --
-    * name: varchar(64)
-
-    * loaded_at: timestamptz
-    * updated_at: timestamptz
-    deleted_at: timestamptz
-}
-
-entity dim_event_playback {
-    * event_playback_sk: bigint <<PK>>
-    --
-    * playback_id: varchar(64)
-
-    * loaded_at: timestamptz
-}
-
 ' Bridges
 entity brg_device_app_release {
     * device_sk: bigint <<PK, FK>>
@@ -175,10 +157,9 @@ entity fct_events {
     * device_os_sk: bigint <<FK>>
     * app_release_sk: bigint <<FK>>
     * track_sk: bigint <<FK>>
-    * event_playback_sk: bigint <<FK>>
     
     * session_id: varchar(64)
-    * playback_id: varchar(64)
+    * playback_id: UUID
 
     * event_timestamp: timestamptz
     * received_at: timestamptz
@@ -186,24 +167,12 @@ entity fct_events {
     * updated_at: timestamptz
 }
 
-entity fct_playbacks {
-    * playback_sk: bigint <<PK>>
-    --
-    * playback_type_sk: bigint <<FK>>
-    * event_playback_sk: bigint <<FK>>
-    * valid_from: timestamptz
-    * valid_to: timestamptz
-}
 ' Fact to dimensions (including Unknown / Not applicable members)
 dim_event_type ||--o{ fct_events : event_type_sk
 dim_device ||--o{ fct_events : device_sk
 dim_device_os ||--o{ fct_events : device_os_sk
 dim_app_release ||--o{ fct_events : app_release_sk
 dim_track ||--o{ fct_events : track_sk
-
-dim_event_playback }o--|| fct_events: event_playback_sk
-dim_event_playback ||--|{ fct_playbacks: event_playback_sk
-dim_playback_type ||--o{ fct_playbacks: playback_type_sk
 
 ' Dimensions to bridges
 dim_device ||--|{ brg_device_app_release : device_sk

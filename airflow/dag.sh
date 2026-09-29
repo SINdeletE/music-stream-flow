@@ -1,1 +1,1 @@
-cp ./pipelines/ETL_dims.py ./dags/ETL_dims.py
+cp -R ./pipelines/. ./dags

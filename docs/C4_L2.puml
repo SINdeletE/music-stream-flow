@@ -14,10 +14,10 @@ System_Boundary(musicaAlias, "Musica", "Music Service") {
 }
 
 System_Boundary(musicStreamFlowAlias, "Music stream flow", "Musica Analytics Service") {
-    Container(musicaDWHDatabaseAlias, "DWH Database", "Clickhouse", "Musica OLTP Database")
+    Container(musicaDWHDatabaseAlias, "DWH Database", "Clickhouse", "Musica Analytics DWH Database")
 
     Container(musicaEventBusDatabaseAlias, "Analytics event bus", "Kafka", "Musica Analytics event bus")
-    Container(musicaPipelineOrchestratorDatabaseAlias, "Pipeline orchestrator", "Airflow", "Musica Pipeline orchestrator")
+    Container(musicaPipelineOrchestratorDatabaseAlias, "Data Pipeline Orchestrator", "Airflow", "Musica Pipeline orchestrator")
 }
 
 Rel(userAlias, musicaWebAppAlias, "Uses")
@@ -31,4 +31,10 @@ Rel(musicaAndroidAlias, musicaBackendAlias, "Uses")
 Rel(musicaDesktopAlias, musicaBackendAlias, "Uses")
 
 Rel(musicaBackendAlias, musicaDatabaseAlias, "Read/Write")
+
+Rel(musicaPipelineOrchestratorDatabaseAlias, musicaDatabaseAlias, "Get lookup tables")
+Rel(musicaPipelineOrchestratorDatabaseAlias, musicaDWHDatabaseAlias, "Actualize lookup tables/Add events")
+Rel(musicaBackendAlias, musicaEventBusDatabaseAlias, "Send events for analytics")
+
+Rel(musicaPipelineOrchestratorDatabaseAlias, musicaEventBusDatabaseAlias, "Get events for analytics")
 @enduml
