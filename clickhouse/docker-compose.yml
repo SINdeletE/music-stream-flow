@@ -1,15 +1,36 @@
 x-clickhouse-common: &clickhouse-common
-  image: clickhouse/clickhouse-server:26.8-alpine
+  image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server:26.8-alpine}
   env_file:
     - .env
+  environment:
+    # Users are managed by users.xml; do not generate competing users.d entries.
+    CLICKHOUSE_SKIP_USER_SETUP: "1"
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8123/ping | grep -q 'Ok.'"]
+    interval: 10s
+    timeout: 5s
+    retries: 12
+    start_period: 30s
   depends_on:
-    - zookeeper
+    zookeeper:
+      condition: service_healthy
 
 services:   
   zookeeper:
-    image: zookeeper:3.7
+    image: ${ZOOKEEPER_IMAGE:-zookeeper:3.7}
     container_name: zookeeper
     hostname: zookeeper
+    restart: unless-stopped
+    volumes:
+      - ${CLICKHOUSE_DATA_FOLDER:-./data}/zookeeper/data:/data
+      - ${CLICKHOUSE_DATA_FOLDER:-./data}/zookeeper/datalog:/datalog
+    healthcheck:
+      test: ["CMD-SHELL", "zkServer.sh status"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     networks:
       clickhouse-network:
         ipv4_address: 172.23.0.10
@@ -22,10 +43,12 @@ services:
       clickhouse-network:
         ipv4_address: 172.23.0.11
     ports:
-      - "127.0.0.1:8123:8123"
-      - "127.0.0.1:9000:9000"
+      - "${CLICKHOUSE_BIND_HOST:-127.0.0.1}:${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      - "${CLICKHOUSE_BIND_HOST:-127.0.0.1}:${CLICKHOUSE_NATIVE_PORT:-9000}:9000"
     volumes:
-      - ${CLICKHOUSE_CONFIGS_FOLDER}/clickhouse01:/etc/clickhouse-server
+      - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse01/config.xml:/etc/clickhouse-server/config.xml:ro
+      - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse01/users.xml:/etc/clickhouse-server/users.xml:ro
+      - ${CLICKHOUSE_DATA_FOLDER:-./data}/clickhouse01:/var/lib/clickhouse
 
   clickhouse02:
     <<: *clickhouse-common
@@ -35,7 +58,9 @@ services:
       clickhouse-network:
         ipv4_address: 172.23.0.12
     volumes:
-      - ${CLICKHOUSE_CONFIGS_FOLDER}/clickhouse02:/etc/clickhouse-server
+      - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse02/config.xml:/etc/clickhouse-server/config.xml:ro
+      - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse02/users.xml:/etc/clickhouse-server/users.xml:ro
+      - ${CLICKHOUSE_DATA_FOLDER:-./data}/clickhouse02:/var/lib/clickhouse
 
   clickhouse03:
     <<: *clickhouse-common
@@ -45,7 +70,9 @@ services:
       clickhouse-network:
         ipv4_address: 172.23.0.13
     volumes:
-      - ${CLICKHOUSE_CONFIGS_FOLDER}/clickhouse03:/etc/clickhouse-server
+      - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse03/config.xml:/etc/clickhouse-server/config.xml:ro
+      - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse03/users.xml:/etc/clickhouse-server/users.xml:ro
+      - ${CLICKHOUSE_DATA_FOLDER:-./data}/clickhouse03:/var/lib/clickhouse
 
   clickhouse04:
     <<: *clickhouse-common
@@ -55,7 +82,32 @@ services:
       clickhouse-network:
         ipv4_address: 172.23.0.14
     volumes:
-      - ${CLICKHOUSE_CONFIGS_FOLDER}/clickhouse04:/etc/clickhouse-server
+      - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse04/config.xml:/etc/clickhouse-server/config.xml:ro
+      - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse04/users.xml:/etc/clickhouse-server/users.xml:ro
+      - ${CLICKHOUSE_DATA_FOLDER:-./data}/clickhouse04:/var/lib/clickhouse
+
+  clickhouse-init:
+    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server:26.8-alpine}
+    env_file:
+      - .env
+    # This is a client-only, one-shot container, not another server node.
+    entrypoint: ["/bin/sh", "/init/init.sh"]
+    restart: "no"
+    depends_on:
+      clickhouse01:
+        condition: service_healthy
+      clickhouse02:
+        condition: service_healthy
+      clickhouse03:
+        condition: service_healthy
+      clickhouse04:
+        condition: service_healthy
+    networks:
+      - clickhouse-network
+    volumes:
+      - ./init.sh:/init/init.sh:ro
+      # 02/03 still contain PostgreSQL BEGIN/COMMIT placeholders; do not load them.
+      - ../sql/dwh/ddl/01-create.sql:/init/sql/01-create.sql:ro
 
 networks:
   clickhouse-network:

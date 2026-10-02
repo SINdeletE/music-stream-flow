@@ -1,28 +1,34 @@
-.PHONY: config
+COMPOSE = docker compose --env-file "$(CURDIR)/.env" -f "$(CURDIR)/docker-compose.yml"
+
+.PHONY: config prepare-data check up init start stop down
 config:
-	rm -rf clickhouse01 clickhouse02 clickhouse03 clickhouse04
-	mkdir -p clickhouse01 clickhouse02 clickhouse03 clickhouse04
-	REPLICA=01 SHARD=01 envsubst < config.xml > clickhouse01/config.xml
-	REPLICA=02 SHARD=01 envsubst < config.xml > clickhouse02/config.xml
-	REPLICA=03 SHARD=02 envsubst < config.xml > clickhouse03/config.xml
-	REPLICA=04 SHARD=02 envsubst < config.xml > clickhouse04/config.xml
-	cp users.xml clickhouse01/users.xml
-	cp users.xml clickhouse02/users.xml
-	cp users.xml clickhouse03/users.xml
-	cp users.xml clickhouse04/users.xml
+	mkdir -p configs/clickhouse01 configs/clickhouse02 configs/clickhouse03 configs/clickhouse04
+	REPLICA=01 SHARD=01 envsubst '$${REPLICA} $${SHARD}' < config.xml > configs/clickhouse01/config.xml
+	REPLICA=02 SHARD=01 envsubst '$${REPLICA} $${SHARD}' < config.xml > configs/clickhouse02/config.xml
+	REPLICA=03 SHARD=02 envsubst '$${REPLICA} $${SHARD}' < config.xml > configs/clickhouse03/config.xml
+	REPLICA=04 SHARD=02 envsubst '$${REPLICA} $${SHARD}' < config.xml > configs/clickhouse04/config.xml
+	cp users.xml configs/clickhouse01/users.xml
+	cp users.xml configs/clickhouse02/users.xml
+	cp users.xml configs/clickhouse03/users.xml
+	cp users.xml configs/clickhouse04/users.xml
 
-.PHONY: up
-up:
-	docker-compose up -d
+prepare-data:
+	mkdir -p data/clickhouse01 data/clickhouse02 data/clickhouse03 data/clickhouse04 data/zookeeper/data data/zookeeper/datalog
 
-.PHONY: start
+check:
+	$(COMPOSE) config --quiet
+
+up: prepare-data check
+	$(COMPOSE) up -d
+
+init: prepare-data check
+	$(COMPOSE) run --rm clickhouse-init
+
 start:
-	docker-compose start
+	$(COMPOSE) start
 
-.PHONY: stop
 stop:
-	docker-compose stop
+	$(COMPOSE) stop
 
-.PHONY: down
 down:
-	docker-compose down
+	$(COMPOSE) down

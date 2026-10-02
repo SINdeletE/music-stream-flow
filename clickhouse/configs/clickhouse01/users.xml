@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<company>
+<clickhouse>
     <profiles>
         <default>
             <max_memory_usage>10000000000</max_memory_usage>
@@ -14,12 +14,14 @@
             <password></password>
             <profile>default</profile>
             <networks>
-                <ip>::/0</ip>
+                <ip>127.0.0.1</ip>
+                <ip>::1</ip>
             </networks>
             <quota>default</quota>
         </default>
         <admin>
-            <password>123</password>
+            <password from_env="CLICKHOUSE_ADMIN_PASSWORD"/>
+            <access_management>1</access_management>
             <profile>default</profile>
             <networks>
                 <ip>::/0</ip>
@@ -40,4 +42,4 @@
             </interval>
         </default>
     </quotas>
-</company>
+</clickhouse>

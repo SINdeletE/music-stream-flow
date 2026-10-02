@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<company>
+<clickhouse>
     <logger>
         <level>debug</level>
         <console>true</console>
@@ -28,7 +28,14 @@
     <tmp_path>/var/lib/clickhouse/tmp/</tmp_path>
     <user_files_path>/var/lib/clickhouse/user_files/</user_files_path>
 
-    <users_config>users.xml</users_config>
+    <user_directories>
+        <users_xml>
+            <path>/etc/clickhouse-server/users.xml</path>
+        </users_xml>
+        <local_directory>
+            <path>/var/lib/clickhouse/access/</path>
+        </local_directory>
+    </user_directories>
     <default_profile>default</default_profile>
     <default_database>default</default_database>
     <timezone>Europe/Moscow</timezone>
@@ -42,10 +49,14 @@
                 <replica>
                     <host>clickhouse01</host>
                     <port>9000</port>
+                    <user>admin</user>
+                    <password from_env="CLICKHOUSE_ADMIN_PASSWORD"/>
                 </replica>
                 <replica>
                     <host>clickhouse02</host>
                     <port>9000</port>
+                    <user>admin</user>
+                    <password from_env="CLICKHOUSE_ADMIN_PASSWORD"/>
                 </replica>
             </shard>
             <shard>
@@ -54,10 +65,14 @@
                 <replica>
                     <host>clickhouse03</host>
                     <port>9000</port>
+                    <user>admin</user>
+                    <password from_env="CLICKHOUSE_ADMIN_PASSWORD"/>
                 </replica>
                 <replica>
                     <host>clickhouse04</host>
                     <port>9000</port>
+                    <user>admin</user>
+                    <password from_env="CLICKHOUSE_ADMIN_PASSWORD"/>
                 </replica>
             </shard>
         </company_cluster>
@@ -81,4 +96,4 @@
     </distributed_ddl>
 
     <format_schema_path>/var/lib/clickhouse/format_schemas/</format_schema_path>
-</company>
+</clickhouse>

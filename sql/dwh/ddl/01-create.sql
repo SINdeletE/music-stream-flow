@@ -8,8 +8,8 @@ CREATE DATABASE IF NOT EXISTS music_dwh ON CLUSTER company_cluster;
 CREATE TABLE IF NOT EXISTS music_dwh.dim_device ON CLUSTER company_cluster
 (
     device_sk Int64 DEFAULT generateSerialID('music_dwh.dim_device', 1),
-    device_id Uuid,
-    user_id Uuid,
+    device_id UUID,
+    user_id UUID,
     name String,
     device_version String,
     loaded_at DateTime64(3, 'UTC'),
@@ -26,7 +26,7 @@ ENGINE = Distributed(company_cluster, music_dwh, dim_device, cityHash64(device_s
 CREATE TABLE IF NOT EXISTS music_dwh.dim_device_os ON CLUSTER company_cluster
 (
     device_os_sk Int64 DEFAULT generateSerialID('music_dwh.dim_device_os', 1),
-    device_os_id Uuid,
+    device_os_id UUID,
     name String,
     device_os_version String,
     valid_from DateTime64(3, 'UTC'),
@@ -44,7 +44,7 @@ ENGINE = Distributed(company_cluster, music_dwh, dim_device_os, cityHash64(devic
 CREATE TABLE IF NOT EXISTS music_dwh.dim_app_release ON CLUSTER company_cluster
 (
     app_release_sk Int64 DEFAULT generateSerialID('music_dwh.dim_app_release', 1),
-    app_release_id Uuid,
+    app_release_id UUID,
     platform String,
     app_release_version String,
     build String,
@@ -59,7 +59,7 @@ ORDER BY app_release_sk;
 CREATE TABLE IF NOT EXISTS music_dwh.dim_track ON CLUSTER company_cluster
 (
     track_sk Int64 DEFAULT generateSerialID('music_dwh.dim_track', 1),
-    track_id Uuid,
+    track_id UUID,
     name String,
     duration_ms Int32,
     is_available Bool DEFAULT false,
@@ -79,7 +79,7 @@ ENGINE = Distributed(company_cluster, music_dwh, dim_track, cityHash64(track_sk)
 CREATE TABLE IF NOT EXISTS music_dwh.dim_artist ON CLUSTER company_cluster
 (
     artist_sk Int64 DEFAULT generateSerialID('music_dwh.dim_artist', 1),
-    artist_id Uuid,
+    artist_id UUID,
     nickname String,
     name Nullable(String),
     middle_name Nullable(String),
@@ -102,7 +102,7 @@ ENGINE = Distributed(company_cluster, music_dwh, dim_artist, cityHash64(artist_s
 CREATE TABLE IF NOT EXISTS music_dwh.dim_genre ON CLUSTER company_cluster
 (
     genre_sk Int64 DEFAULT generateSerialID('music_dwh.dim_genre', 1),
-    genre_id Uuid,
+    genre_id UUID,
     name String,
     loaded_at DateTime64(3, 'UTC'),
     updated_at DateTime64(3, 'UTC'),
@@ -114,7 +114,7 @@ ORDER BY genre_sk;
 CREATE TABLE IF NOT EXISTS music_dwh.dim_release ON CLUSTER company_cluster
 (
     release_sk Int64 DEFAULT generateSerialID('music_dwh.dim_release', 1),
-    release_id Uuid,
+    release_id UUID,
     name String,
     is_available Bool DEFAULT false,
     released_at DateTime64(3, 'UTC'),
@@ -212,13 +212,13 @@ ENGINE = Distributed(company_cluster, music_dwh, brg_artist_release, cityHash64(
 CREATE TABLE IF NOT EXISTS music_dwh.fct_events ON CLUSTER company_cluster
 (
     event_sk Int64 DEFAULT generateSerialID('music_dwh.fct_events', 1),
-    event_id Uuid,
+    event_id UUID,
     event_type_sk Int64,
     device_sk Int64,
     device_os_sk Int64,
     app_release_sk Int64,
     track_sk Int64,
-    session_id Uuid,
+    session_id UUID,
 
     playback_id Nullable(UUID),
     event_timestamp DateTime64(3, 'UTC'),
