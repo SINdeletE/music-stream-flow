@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import ClassVar
+from uuid import UUID
 
 from .base import ClickHouseModel
 
@@ -12,4 +12,4 @@ class BrgDeviceAppRelease(ClickHouseModel):
 
     device_sk: int
     app_release_sk: int
-    loaded_at: datetime
+    load_id: UUID

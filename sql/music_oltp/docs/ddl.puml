@@ -37,6 +37,7 @@ entity installation {
     * device_id: uuid <<FK>>
     * app_release_id: uuid <<FK>>
     * installed_at: timestamptz
+    last_seen_at: timestamptz
     * created_at: timestamptz = now()
     * updated_at: timestamptz = now()
 }
@@ -124,7 +125,7 @@ entity artist_release {
     * updated_at: timestamptz = now()
 }
 
-device ||--|{ device_os_history : CASCADE
+device ||--o{ device_os_history : CASCADE
 device ||--o{ installation : RESTRICT
 app_release ||--o{ installation : RESTRICT
 

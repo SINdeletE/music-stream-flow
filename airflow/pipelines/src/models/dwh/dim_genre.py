@@ -10,9 +10,10 @@ from .base import ClickHouseModel
 class DimGenre(ClickHouseModel):
     table_name: ClassVar[str] = "music_dwh.dim_genre"
 
-    genre_sk: int
+    genre_sk: int | None = None
     genre_id: UUID
     name: str
-    loaded_at: datetime
+    load_id: UUID
+    source_created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar
+from uuid import UUID
 
 from .base import ClickHouseModel
 
@@ -9,8 +10,8 @@ from .base import ClickHouseModel
 class DimEventType(ClickHouseModel):
     table_name: ClassVar[str] = "music_dwh.dim_event_type"
 
-    event_type_sk: int
+    event_type_sk: int | None = None
     name: str
-    loaded_at: datetime
+    load_id: UUID
     updated_at: datetime
     deleted_at: datetime | None = None

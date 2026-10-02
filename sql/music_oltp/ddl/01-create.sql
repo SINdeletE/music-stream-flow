@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS music_oltp.installation (
     device_id UUID NOT NULL REFERENCES music_oltp.device(id) ON DELETE RESTRICT,
     app_release_id UUID NOT NULL REFERENCES music_oltp.app_release(id) ON DELETE RESTRICT,
     installed_at TIMESTAMPTZ NOT NULL,
+    last_seen_at TIMESTAMPTZ,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()

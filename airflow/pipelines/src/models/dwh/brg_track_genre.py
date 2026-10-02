@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import ClassVar
+from uuid import UUID
 
 from .base import ClickHouseModel
 
@@ -11,3 +12,4 @@ class BrgTrackGenre(ClickHouseModel):
 
     track_sk: int
     genre_sk: int
+    load_id: UUID

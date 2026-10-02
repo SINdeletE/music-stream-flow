@@ -14,6 +14,7 @@ from .dim_event_type import DimEventType
 from .dim_genre import DimGenre
 from .dim_release import DimRelease
 from .dim_track import DimTrack
+from .etl_loads import EtlLoad
 from .fct_events import FctEvent
 
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     "DimGenre",
     "DimRelease",
     "DimTrack",
+    "EtlLoad",
     "FctEvent",
 ]

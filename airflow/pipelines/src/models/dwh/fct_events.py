@@ -11,7 +11,7 @@ class FctEvent(ClickHouseModel):
     table_name: ClassVar[str] = "music_dwh.fct_events"
     distributed_table_name: ClassVar[str | None] = "music_dwh.fct_events_all"
 
-    event_sk: int
+    event_sk: int | None = None
     event_id: UUID
     event_type_sk: int
     device_sk: int
@@ -22,5 +22,5 @@ class FctEvent(ClickHouseModel):
     playback_id: UUID | None = None
     event_timestamp: datetime
     received_at: datetime
-    loaded_at: datetime
+    load_id: UUID
     updated_at: datetime

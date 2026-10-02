@@ -11,7 +11,7 @@ class DimArtist(ClickHouseModel):
     table_name: ClassVar[str] = "music_dwh.dim_artist"
     distributed_table_name: ClassVar[str | None] = "music_dwh.dim_artist_all"
 
-    artist_sk: int
+    artist_sk: int | None = None
     artist_id: UUID
     nickname: str
     name: str | None = None
@@ -20,7 +20,7 @@ class DimArtist(ClickHouseModel):
     country_code: str | None = None
     biography: str | None = None
     is_verified: bool
-    created_at: datetime
-    loaded_at: datetime
+    load_id: UUID
+    source_created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
