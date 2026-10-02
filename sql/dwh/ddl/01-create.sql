@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_device ON CLUSTER company_cluster
 (
     device_sk BIGINT DEFAULT generateSerialID('music_dwh.dim_device', 1),
     device_id UUID,
-    user_id UUID,
+    user_id String,
     name String,
     device_version String,
 

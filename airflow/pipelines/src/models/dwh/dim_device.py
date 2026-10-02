@@ -13,7 +13,7 @@ class DimDevice(ClickHouseModel):
 
     device_sk: int | None = None
     device_id: UUID
-    user_id: UUID
+    user_id: str
     name: str
     device_version: str
     load_id: UUID

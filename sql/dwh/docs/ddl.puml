@@ -16,7 +16,7 @@ entity dim_device {
     * device_sk: BIGINT <<PK, generated>>
     --
     * device_id: UUID
-    * user_id: UUID
+    * user_id: String
     * name: String
     * device_version: String
 
