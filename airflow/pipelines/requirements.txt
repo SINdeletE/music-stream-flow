@@ -1,4 +1,0 @@
-pandas==3.0.5
-sqlalchemy==2.0.52
-apache-airflow==3.3.1
-pydantic==2.13.5

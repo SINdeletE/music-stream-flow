@@ -15,7 +15,7 @@ class OltpSettings(BaseSettings):
     )
 
     @property
-    def asyncpg_database_url(self) -> URL:
+    def database_url(self) -> URL:
         return URL.create(
             drivername="postgresql+asyncpg",
             username=self.music_oltp_db_user,

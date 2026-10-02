@@ -4,7 +4,8 @@
 entity dim_device {
     * device_sk: bigint <<PK>>
     --
-    * user_id: varchar(128)
+    * device_id: uuid
+    * user_id: uuid
     * name: varchar(128)
     * device_version: varchar(16)
 
@@ -17,7 +18,7 @@ entity dim_device {
 entity dim_device_os {
     * device_os_sk: bigint <<PK>>
     --
-    * device_os_id: varchar(64)
+    * device_os_id: uuid
     * name: varchar(32)
     * device_os_version: varchar(32)
     * valid_from: timestamptz
@@ -31,7 +32,7 @@ entity dim_device_os {
 entity dim_app_release {
     * app_release_sk: bigint <<PK>>
     --
-    * app_release_id: varchar(64)
+    * app_release_id: uuid
     * platform: varchar(16)
     * app_release_version: varchar(16)
     * build: varchar(32)
@@ -46,7 +47,7 @@ entity dim_app_release {
 entity dim_track {
     * track_sk: bigint <<PK>>
     --
-    * track_id: varchar(64)
+    * track_id: uuid
     * name: varchar(255)
     * duration_ms: int
     * is_available: boolean = false
@@ -61,7 +62,7 @@ entity dim_track {
 entity dim_artist {
     * artist_sk: bigint <<PK>>
     --
-    * artist_id: varchar(64)
+    * artist_id: uuid
     * nickname: varchar(255)
     name: varchar(255)
     middle_name: varchar(255)
@@ -79,7 +80,7 @@ entity dim_artist {
 entity dim_genre {
     * genre_sk: bigint <<PK>>
     --
-    * genre_id: varchar(64)
+    * genre_id: uuid
     * name: varchar(64)
 
     * loaded_at: timestamptz
@@ -90,7 +91,7 @@ entity dim_genre {
 entity dim_release {
     * release_sk: bigint <<PK>>
     --
-    * release_id: varchar(64)
+    * release_id: uuid
     * name: varchar(255)
     * is_available: boolean = false
     * released_at: timestamptz
@@ -158,8 +159,8 @@ entity fct_events {
     * app_release_sk: bigint <<FK>>
     * track_sk: bigint <<FK>>
     
-    * session_id: varchar(64)
-    * playback_id: UUID
+    * session_id: uuid
+    * playback_id: uuid
 
     * event_timestamp: timestamptz
     * received_at: timestamptz

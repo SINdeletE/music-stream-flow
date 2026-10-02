@@ -1,7 +1,6 @@
 from airflow import DAG
 from airflow.sdk import task, get_current_context, Variable
 from datetime import datetime
-import dotenv
 
 # [timestamp_start, timestamp_end)
 first_date = datetime(2026, 9, 28, 11, 31)
@@ -15,8 +14,6 @@ dag = DAG('etl_msf',
 with dag:
     @task(task_id="fix_timestamp")
     def timestamp_fixing(ds=None, **kwargs):
-        global timestamp_end
-        
         context = get_current_context()
 
         return {

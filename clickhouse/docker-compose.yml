@@ -1,5 +1,5 @@
 x-clickhouse-common: &clickhouse-common
-  image: clickhouse/clickhouse-server:22.5
+  image: clickhouse/clickhouse-server:26.8-alpine
   env_file:
     - .env
   depends_on:
