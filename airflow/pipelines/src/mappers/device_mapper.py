@@ -8,4 +8,4 @@ class DeviceMapper:
     def to_dwh_device(entity: Device, load_id: UUID) -> DimDevice:
         return DimDevice(device_id=entity.id, user_id=entity.user_id,
                          name=entity.name, device_version=entity.device_version,
-                         load_id=load_id, updated_at=entity.updated_at, deleted_at=entity.d)
+                         load_id=load_id, source_created_at=entity.created_at, updated_at=entity.updated_at)
