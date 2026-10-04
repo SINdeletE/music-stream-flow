@@ -15,12 +15,15 @@ class EtlLoad(ClickHouseModel):
     dag_id: str
     run_id: str
     task_id: str
+
     source_system: str
     target_table: str
+
     interval_start: datetime
     interval_end: datetime
     started_at: datetime
     finished_at: datetime | None = None
+    
     state: str
     rows_read: int
     rows_written: int

@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_device ON CLUSTER company_cluster
     source_created_at DateTime64(3, 'UTC'),
     updated_at DateTime64(3, 'UTC')
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_device', '{replica}')
-ORDER BY device_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_device', '{replica}', updated_at)
+ORDER BY device_id;
 
 CREATE TABLE IF NOT EXISTS music_dwh.dim_device_all ON CLUSTER company_cluster
 AS music_dwh.dim_device
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_device_os ON CLUSTER company_cluster
     load_id UUID,
     source_created_at DateTime64(3, 'UTC')
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_device_os', '{replica}')
-ORDER BY device_os_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_device_os', '{replica}')
+ORDER BY device_os_id;
 
 CREATE TABLE IF NOT EXISTS music_dwh.dim_device_os_all ON CLUSTER company_cluster
 AS music_dwh.dim_device_os
@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_app_release ON CLUSTER company_cluster
     load_id UUID,
     source_created_at DateTime64(3, 'UTC')
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/music_dwh/dim_app_release', '{replica}')
-ORDER BY app_release_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/music_dwh/dim_app_release', '{replica}')
+ORDER BY app_release_id;
 
 CREATE TABLE IF NOT EXISTS music_dwh.dim_track ON CLUSTER company_cluster
 (
@@ -67,8 +67,8 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_track ON CLUSTER company_cluster
     updated_at DateTime64(3, 'UTC'),
     deleted_at Nullable(DateTime64(3, 'UTC'))
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_track', '{replica}')
-ORDER BY track_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_track', '{replica}', updated_at)
+ORDER BY track_id;
 
 CREATE TABLE IF NOT EXISTS music_dwh.dim_track_all ON CLUSTER company_cluster
 AS music_dwh.dim_track
@@ -91,8 +91,8 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_artist ON CLUSTER company_cluster
     updated_at DateTime64(3, 'UTC'),
     deleted_at Nullable(DateTime64(3, 'UTC'))
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_artist', '{replica}')
-ORDER BY artist_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_artist', '{replica}', updated_at)
+ORDER BY artist_id;
 
 CREATE TABLE IF NOT EXISTS music_dwh.dim_artist_all ON CLUSTER company_cluster
 AS music_dwh.dim_artist
@@ -109,8 +109,8 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_genre ON CLUSTER company_cluster
     updated_at DateTime64(3, 'UTC'),
     deleted_at Nullable(DateTime64(3, 'UTC'))
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/music_dwh/dim_genre', '{replica}')
-ORDER BY genre_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/music_dwh/dim_genre', '{replica}', updated_at)
+ORDER BY genre_id;
 
 CREATE TABLE IF NOT EXISTS music_dwh.dim_release ON CLUSTER company_cluster
 (
@@ -125,8 +125,8 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_release ON CLUSTER company_cluster
     updated_at DateTime64(3, 'UTC'),
     deleted_at Nullable(DateTime64(3, 'UTC'))
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_release', '{replica}')
-ORDER BY release_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/dim_release', '{replica}', updated_at)
+ORDER BY release_id;
 
 CREATE TABLE IF NOT EXISTS music_dwh.dim_release_all ON CLUSTER company_cluster
 AS music_dwh.dim_release
@@ -140,8 +140,8 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_event_type ON CLUSTER company_cluster
     updated_at DateTime64(3, 'UTC'),
     deleted_at Nullable(DateTime64(3, 'UTC'))
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/music_dwh/dim_event_type', '{replica}')
-ORDER BY event_type_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/music_dwh/dim_event_type', '{replica}', updated_at)
+ORDER BY name;
 
 -- Bridges
 
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS music_dwh.brg_device_app_release ON CLUSTER company_c
 
     load_id UUID
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_device_app_release', '{replica}')
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_device_app_release', '{replica}')
 ORDER BY (device_sk, app_release_sk);
 
 CREATE TABLE IF NOT EXISTS music_dwh.brg_device_app_release_all ON CLUSTER company_cluster
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS music_dwh.brg_track_genre ON CLUSTER company_cluster
 
     load_id UUID
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_track_genre', '{replica}')
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_track_genre', '{replica}')
 ORDER BY (track_sk, genre_sk);
 
 CREATE TABLE IF NOT EXISTS music_dwh.brg_track_genre_all ON CLUSTER company_cluster
@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS music_dwh.brg_track_artist ON CLUSTER company_cluster
 
     load_id UUID
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_track_artist', '{replica}')
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_track_artist', '{replica}')
 ORDER BY (track_sk, artist_sk);
 
 CREATE TABLE IF NOT EXISTS music_dwh.brg_track_artist_all ON CLUSTER company_cluster
@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS music_dwh.brg_track_release ON CLUSTER company_cluste
 
     load_id UUID
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_track_release', '{replica}')
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_track_release', '{replica}')
 ORDER BY (track_sk, release_sk);
 
 CREATE TABLE IF NOT EXISTS music_dwh.brg_track_release_all ON CLUSTER company_cluster
@@ -212,7 +212,7 @@ CREATE TABLE IF NOT EXISTS music_dwh.brg_artist_release ON CLUSTER company_clust
 
     load_id UUID
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_artist_release', '{replica}')
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/brg_artist_release', '{replica}')
 ORDER BY (artist_sk, release_sk);
 
 CREATE TABLE IF NOT EXISTS music_dwh.brg_artist_release_all ON CLUSTER company_cluster
@@ -238,13 +238,13 @@ CREATE TABLE IF NOT EXISTS music_dwh.fct_events ON CLUSTER company_cluster
     load_id UUID,
     updated_at DateTime64(3, 'UTC')
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/fct_events', '{replica}')
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/fct_events', '{replica}', updated_at)
 PARTITION BY toYYYYMM(event_timestamp)
-ORDER BY event_timestamp;
+ORDER BY (event_timestamp, event_id);
 
 CREATE TABLE IF NOT EXISTS music_dwh.fct_events_all ON CLUSTER company_cluster
 AS music_dwh.fct_events
-ENGINE = Distributed(company_cluster, music_dwh, fct_events, cityHash64(event_sk));
+ENGINE = Distributed(company_cluster, music_dwh, fct_events, cityHash64(event_id));
 
 
 -- Load audit table
@@ -271,5 +271,5 @@ CREATE TABLE IF NOT EXISTS music_dwh.etl_loads ON CLUSTER company_cluster
 
     error_msg Nullable(String)
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{cluster}/music_dwh/etl_loads', '{replica}')
-ORDER BY event_type_sk;
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/music_dwh/etl_loads', '{replica}')
+ORDER BY load_id;
