@@ -1,0 +1,11 @@
+services:
+  kafka:
+    image: apache/kafka:4.3.1
+    container_name: kafka
+    env_file:
+      - .env
+    ports:
+      - "${KAFKA_PORT}:${KAFKA_INTERNAL_PORT}"
+      - "${KAFKA_CONTROLLER_PORT}:${KAFKA_CONTROLLER_INTERNAL_PORT}"
+    volumes:
+      - "${KAFKA_DATA}:/var/lib/kafka/data"

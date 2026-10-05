@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from datetime import datetime
 from typing import Generic, TypeVar
 from uuid import UUID
@@ -27,7 +27,7 @@ class OltpExtractor(Generic[EntityT]):
         self,
         timestamp_start: datetime,
         timestamp_end: datetime,
-    ) -> AsyncIterator[list[EntityT]]:
+    ) -> AsyncGenerator[list[EntityT], None]:
         if timestamp_start.utcoffset() is None or timestamp_end.utcoffset() is None:
             raise ValueError("timestamp_start and timestamp_end must be timezone-aware")
         if timestamp_start > timestamp_end:

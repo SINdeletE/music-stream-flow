@@ -2,21 +2,25 @@ from uuid import UUID
 
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
+from src.mappers.release_mapper import ReleaseMapper
 from src.models.dwh import DimRelease
+from src.models.oltp import Release
 
 
 class DimReleaseTransformer:
     @staticmethod
     async def transform(
-        batch: list[DimRelease],
+        batch: list[Release],
         client: AsyncClient,
+        *,
+        load_id: UUID,
     ) -> list[DimRelease]:
-        release_sks: dict[UUID, int | None] = {}
-        for release in batch:
-            release_sks[release.release_id] = None
-
         if not batch:
-            return batch
+            return []
+
+        release_sks: dict[UUID, int | None] = {}
+        for entity in batch:
+            release_sks[entity.id] = None
 
         result = await client.query(
             query="""
@@ -33,7 +37,11 @@ class DimReleaseTransformer:
         for release_id, release_sk in result.result_rows:
             release_sks[release_id] = release_sk
 
-        for release in batch:
-            release.release_sk = release_sks[release.release_id]
-
-        return batch
+        return [
+            ReleaseMapper.to_dwh(
+                entity,
+                load_id,
+                release_sk=release_sks[entity.id],
+            )
+            for entity in batch
+        ]

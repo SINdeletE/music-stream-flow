@@ -2,21 +2,25 @@ from uuid import UUID
 
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
+from src.mappers.app_release_mapper import AppReleaseMapper
 from src.models.dwh import DimAppRelease
+from src.models.oltp import AppRelease
 
 
 class DimAppReleaseTransformer:
     @staticmethod
     async def transform(
-        batch: list[DimAppRelease],
+        batch: list[AppRelease],
         client: AsyncClient,
+        *,
+        load_id: UUID,
     ) -> list[DimAppRelease]:
-        app_release_sks: dict[UUID, int | None] = {}
-        for app_release in batch:
-            app_release_sks[app_release.app_release_id] = None
-
         if not batch:
-            return batch
+            return []
+
+        app_release_sks: dict[UUID, int | None] = {}
+        for entity in batch:
+            app_release_sks[entity.id] = None
 
         result = await client.query(
             query="""
@@ -33,7 +37,11 @@ class DimAppReleaseTransformer:
         for app_release_id, app_release_sk in result.result_rows:
             app_release_sks[app_release_id] = app_release_sk
 
-        for app_release in batch:
-            app_release.app_release_sk = app_release_sks[app_release.app_release_id]
-
-        return batch
+        return [
+            AppReleaseMapper.to_dwh(
+                entity,
+                load_id,
+                app_release_sk=app_release_sks[entity.id],
+            )
+            for entity in batch
+        ]

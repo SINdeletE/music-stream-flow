@@ -2,21 +2,25 @@ from uuid import UUID
 
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
+from src.mappers.device_mapper import DeviceMapper
 from src.models.dwh import DimDevice
+from src.models.oltp import Device
 
 
 class DimDeviceTransformer:
     @staticmethod
     async def transform(
-        batch: list[DimDevice],
+        batch: list[Device],
         client: AsyncClient,
+        *,
+        load_id: UUID,
     ) -> list[DimDevice]:
-        device_sks: dict[UUID, int | None] = {}
-        for device in batch:
-            device_sks[device.device_id] = None
-
         if not batch:
-            return batch
+            return []
+
+        device_sks: dict[UUID, int | None] = {}
+        for entity in batch:
+            device_sks[entity.id] = None
 
         result = await client.query(
             query="""
@@ -33,7 +37,11 @@ class DimDeviceTransformer:
         for device_id, device_sk in result.result_rows:
             device_sks[device_id] = device_sk
 
-        for device in batch:
-            device.device_sk = device_sks[device.device_id]
-
-        return batch
+        return [
+            DeviceMapper.to_dwh(
+                entity,
+                load_id,
+                device_sk=device_sks[entity.id],
+            )
+            for entity in batch
+        ]

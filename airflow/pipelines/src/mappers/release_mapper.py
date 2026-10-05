@@ -3,7 +3,7 @@ from src.models.oltp import Release
 from datetime import datetime
 from uuid import UUID
 
-class TrackMapper:
+class ReleaseMapper:
     @staticmethod
     def to_dwh(
         entity: Release,

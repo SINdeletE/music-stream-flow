@@ -3,7 +3,7 @@ from src.models.oltp import Artist
 from datetime import datetime
 from uuid import UUID
 
-class TrackMapper:
+class ArtistMapper:
     @staticmethod
     def to_dwh(
         entity: Artist,

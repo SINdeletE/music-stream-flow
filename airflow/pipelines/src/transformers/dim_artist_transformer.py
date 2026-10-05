@@ -2,21 +2,25 @@ from uuid import UUID
 
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
+from src.mappers.artist_mapper import ArtistMapper
 from src.models.dwh import DimArtist
+from src.models.oltp import Artist
 
 
 class DimArtistTransformer:
     @staticmethod
     async def transform(
-        batch: list[DimArtist],
+        batch: list[Artist],
         client: AsyncClient,
+        *,
+        load_id: UUID,
     ) -> list[DimArtist]:
-        artist_sks: dict[UUID, int | None] = {}
-        for artist in batch:
-            artist_sks[artist.artist_id] = None
-
         if not batch:
-            return batch
+            return []
+
+        artist_sks: dict[UUID, int | None] = {}
+        for entity in batch:
+            artist_sks[entity.id] = None
 
         result = await client.query(
             query="""
@@ -33,7 +37,11 @@ class DimArtistTransformer:
         for artist_id, artist_sk in result.result_rows:
             artist_sks[artist_id] = artist_sk
 
-        for artist in batch:
-            artist.artist_sk = artist_sks[artist.artist_id]
-
-        return batch
+        return [
+            ArtistMapper.to_dwh(
+                entity,
+                load_id,
+                artist_sk=artist_sks[entity.id],
+            )
+            for entity in batch
+        ]

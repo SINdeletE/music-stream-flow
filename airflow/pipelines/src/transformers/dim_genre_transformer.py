@@ -2,21 +2,25 @@ from uuid import UUID
 
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
+from src.mappers.genre_mapper import GenreMapper
 from src.models.dwh import DimGenre
+from src.models.oltp import Genre
 
 
 class DimGenreTransformer:
     @staticmethod
     async def transform(
-        batch: list[DimGenre],
+        batch: list[Genre],
         client: AsyncClient,
+        *,
+        load_id: UUID,
     ) -> list[DimGenre]:
-        genre_sks: dict[UUID, int | None] = {}
-        for genre in batch:
-            genre_sks[genre.genre_id] = None
-
         if not batch:
-            return batch
+            return []
+
+        genre_sks: dict[UUID, int | None] = {}
+        for entity in batch:
+            genre_sks[entity.id] = None
 
         result = await client.query(
             query="""
@@ -33,7 +37,11 @@ class DimGenreTransformer:
         for genre_id, genre_sk in result.result_rows:
             genre_sks[genre_id] = genre_sk
 
-        for genre in batch:
-            genre.genre_sk = genre_sks[genre.genre_id]
-
-        return batch
+        return [
+            GenreMapper.to_dwh(
+                entity,
+                load_id,
+                genre_sk=genre_sks[entity.id],
+            )
+            for entity in batch
+        ]

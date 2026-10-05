@@ -2,21 +2,25 @@ from uuid import UUID
 
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
+from src.mappers.track_mapper import TrackMapper
 from src.models.dwh import DimTrack
+from src.models.oltp import Track
 
 
 class DimTrackTransformer:
     @staticmethod
     async def transform(
-        batch: list[DimTrack],
+        batch: list[Track],
         client: AsyncClient,
+        *,
+        load_id: UUID,
     ) -> list[DimTrack]:
-        track_sks: dict[UUID, int | None] = {}
-        for track in batch:
-            track_sks[track.track_id] = None
-
         if not batch:
-            return batch
+            return []
+
+        track_sks: dict[UUID, int | None] = {}
+        for entity in batch:
+            track_sks[entity.id] = None
 
         result = await client.query(
             query="""
@@ -33,7 +37,11 @@ class DimTrackTransformer:
         for track_id, track_sk in result.result_rows:
             track_sks[track_id] = track_sk
 
-        for track in batch:
-            track.track_sk = track_sks[track.track_id]
-
-        return batch
+        return [
+            TrackMapper.to_dwh(
+                entity,
+                load_id,
+                track_sk=track_sks[entity.id],
+            )
+            for entity in batch
+        ]
