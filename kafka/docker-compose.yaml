@@ -9,3 +9,31 @@ services:
       - "${KAFKA_CONTROLLER_PORT}:${KAFKA_CONTROLLER_INTERNAL_PORT}"
     volumes:
       - "${KAFKA_DATA}:/var/lib/kafka/data"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:$${KAFKA_INTERNAL_PORT} --list > /dev/null 2>&1
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+  kafka-init:
+    image: apache/kafka:4.3.1
+    env_file:
+      - .env
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: "no"
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        exec /opt/kafka/bin/kafka-topics.sh \
+          --bootstrap-server "kafka:$${KAFKA_INTERNAL_PORT}" \
+          --create \
+          --if-not-exists \
+          --topic music-events \
+          --partitions "$${KAFKA_NUM_PARTITIONS}" \
+          --replication-factor 1
