@@ -1,6 +1,6 @@
 from src.models.oltp import Device
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class DeviceExtractor(OltpExtractor[Device]):

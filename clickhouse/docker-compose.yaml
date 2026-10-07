@@ -42,6 +42,7 @@ services:
     networks:
       clickhouse-network:
         ipv4_address: 172.23.0.11
+      shared: {}
     ports:
       - "${CLICKHOUSE_BIND_HOST:-127.0.0.1}:${CLICKHOUSE_HTTP_PORT:-8123}:8123"
       - "${CLICKHOUSE_BIND_HOST:-127.0.0.1}:${CLICKHOUSE_NATIVE_PORT:-9000}:9000"
@@ -57,6 +58,7 @@ services:
     networks:
       clickhouse-network:
         ipv4_address: 172.23.0.12
+      shared: {}
     volumes:
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse02/config.xml:/etc/clickhouse-server/config.xml:ro
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse02/users.xml:/etc/clickhouse-server/users.xml:ro
@@ -69,6 +71,7 @@ services:
     networks:
       clickhouse-network:
         ipv4_address: 172.23.0.13
+      shared: {}
     volumes:
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse03/config.xml:/etc/clickhouse-server/config.xml:ro
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse03/users.xml:/etc/clickhouse-server/users.xml:ro
@@ -81,6 +84,7 @@ services:
     networks:
       clickhouse-network:
         ipv4_address: 172.23.0.14
+      shared: {}
     volumes:
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse04/config.xml:/etc/clickhouse-server/config.xml:ro
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse04/users.xml:/etc/clickhouse-server/users.xml:ro
@@ -110,6 +114,9 @@ services:
       - ../sql/dwh/ddl/01-create.sql:/init/sql/01-create.sql:ro
 
 networks:
+  shared:
+    external: true
+    name: music-stream-network
   clickhouse-network:
     name: clickhouse-network
     ipam:

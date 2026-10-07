@@ -1,6 +1,6 @@
 from src.models.oltp import AppRelease
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class AppReleaseExtractor(OltpExtractor[AppRelease]):

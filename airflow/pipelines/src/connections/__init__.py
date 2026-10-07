@@ -1,6 +1,5 @@
-"""Database settings for pipeline connections."""
+from .dwh_connector import DwhConnector
+from .kafka_consumer_connector import KafkaConsumerConnector
+from .oltp_connector import OltpConnector
 
-from .dwh_settings import DwhSettings
-from .oltp_settings import OltpSettings
-
-__all__ = ["DwhSettings", "OltpSettings"]
+__all__ = ["DwhConnector", "KafkaConsumerConnector", "OltpConnector"]

@@ -1,6 +1,6 @@
 from src.models.oltp import DeviceOsHistory
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class DeviceOsExtractor(OltpExtractor[DeviceOsHistory]):

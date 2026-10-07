@@ -1,6 +1,6 @@
 from src.models.oltp import TrackGenre
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class TrackGenreExtractor(OltpExtractor[TrackGenre]):

@@ -3,6 +3,8 @@ from datetime import datetime
 import pendulum
 from airflow.sdk import DAG, Variable, cross_downstream, get_current_context, task
 
+from src.settings import KafkaSettings
+
 from src.pipelines import (
     BrgArtistReleasePipeline,
     BrgDeviceAppReleasePipeline,
@@ -38,6 +40,12 @@ BRG_PIPELINES = (
 )
 
 
+kafka_settings = KafkaSettings()
+KAFKA_EVENTS_TASK_IDS = (
+    (f"load_kafka_events_partition_{str(i)}", i) for i in range(1, kafka_settings.music_kafka_num_partitions + 1)
+)
+
+
 def create_load_task(task_id, pipeline):
     @task(task_id=task_id)
     async def load(interval):
@@ -52,6 +60,14 @@ def create_load_task(task_id, pipeline):
         )
 
     return load
+
+
+def create_load_kafka_events_task(task_id, num_partition):
+    @task(task_id=task_id)
+    async def load(interval):
+        context = get_current_context()
+
+        await 
 
 # [timestamp_start, timestamp_end)
 first_date = pendulum.datetime(2026, 9, 28, 11, 31, tz="Europe/Moscow")

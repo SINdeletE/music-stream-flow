@@ -1,6 +1,6 @@
 from src.models.oltp import Release
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class ReleaseExtractor(OltpExtractor[Release]):

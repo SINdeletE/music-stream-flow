@@ -1,6 +1,6 @@
 from src.models.oltp import Installation
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class InstallationExtractor(OltpExtractor[Installation]):

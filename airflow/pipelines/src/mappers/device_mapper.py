@@ -11,6 +11,6 @@ class DeviceMapper:
         *,
         device_sk: int | None = None,
     ) -> DimDevice:
-        return DimDevice(device_sk=device_sk, device_id=entity.id, user_id=entity.user_id,
+        return DimDevice(device_sk=device_sk, device_id=entity.id,
                          name=entity.name, device_version=entity.device_version,
                          load_id=load_id, source_created_at=entity.created_at, updated_at=entity.updated_at)

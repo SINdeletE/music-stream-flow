@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
-from src.connections import OltpSettings
+from src.settings import OltpSettings
 from src.models.oltp import Base
 
 

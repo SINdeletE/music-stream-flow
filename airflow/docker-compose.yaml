@@ -175,6 +175,9 @@ services:
 
   airflow-worker:
     <<: *airflow-common
+    networks:
+      - default
+      - shared
     command: celery worker
     healthcheck:
       # yamllint disable rule:line-length
@@ -342,3 +345,8 @@ services:
 
 volumes:
   postgres-db-volume:
+
+networks:
+  shared:
+    external: true
+    name: music-stream-network

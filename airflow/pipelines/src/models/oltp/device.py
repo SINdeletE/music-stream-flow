@@ -12,7 +12,6 @@ class Device(Base):
     __tablename__ = "device"
 
     id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True)
-    user_id: Mapped[str] = mapped_column(String(128))
     name: Mapped[str] = mapped_column(String(128))
     device_version: Mapped[str] = mapped_column(String(16))
     created_at: Mapped[datetime] = mapped_column(

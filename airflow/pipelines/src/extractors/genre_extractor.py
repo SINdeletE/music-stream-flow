@@ -1,6 +1,6 @@
 from src.models.oltp import Genre
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class GenreExtractor(OltpExtractor[Genre]):

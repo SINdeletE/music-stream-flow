@@ -4,10 +4,10 @@ from datetime import UTC, datetime
 from typing import Generic, TypeVar
 from uuid import uuid7
 
-from src.connections import DwhSettings, OltpSettings
+from src.settings import DwhSettings, OltpSettings
 from src.connections.dwh_connector import DwhConnector
 from src.connections.oltp_connector import OltpConnector
-from src.extractors.base import OltpExtractor
+from airflow.pipelines.src.extractors.oltp_extractor import OltpExtractor
 from src.loaders import ClickHouseLoader, EtlLoadLoader
 from src.models.dwh import ClickHouseModel, EtlLoad
 from src.models.oltp import Base

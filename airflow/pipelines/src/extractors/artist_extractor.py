@@ -1,6 +1,6 @@
 from src.models.oltp import Artist
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class ArtistExtractor(OltpExtractor[Artist]):

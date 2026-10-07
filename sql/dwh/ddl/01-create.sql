@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_device ON CLUSTER company_cluster
 (
     device_sk BIGINT DEFAULT generateSerialID('music_dwh.dim_device', 1),
     device_id UUID,
-    user_id String,
     name String,
     device_version String,
 
@@ -137,10 +136,9 @@ CREATE TABLE IF NOT EXISTS music_dwh.dim_event_type ON CLUSTER company_cluster
     event_type_sk BIGINT DEFAULT generateSerialID('music_dwh.dim_event_type', 1),
     name String,
     load_id UUID,
-    updated_at DateTime64(3, 'UTC'),
     deleted_at Nullable(DateTime64(3, 'UTC'))
 )
-ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/music_dwh/dim_event_type', '{replica}', updated_at)
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/music_dwh/dim_event_type', '{replica}')
 ORDER BY name;
 
 -- Bridges
@@ -225,20 +223,20 @@ CREATE TABLE IF NOT EXISTS music_dwh.fct_events ON CLUSTER company_cluster
 (
     event_sk BIGINT DEFAULT generateSerialID('music_dwh.fct_events', 1),
     event_id UUID,
+    user_id Nullable(UUID),
     event_type_sk BIGINT,
     device_sk BIGINT,
     device_os_sk BIGINT,
     app_release_sk BIGINT,
-    track_sk BIGINT,
+    track_sk Nullable(BIGINT),
     session_id UUID,
 
     playback_id Nullable(UUID),
     event_timestamp DateTime64(3, 'UTC'),
     received_at DateTime64(3, 'UTC'),
-    load_id UUID,
-    updated_at DateTime64(3, 'UTC')
+    load_id UUID
 )
-ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/fct_events', '{replica}', updated_at)
+ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{cluster}/{shard}/music_dwh/fct_events', '{replica}')
 PARTITION BY toYYYYMM(event_timestamp)
 ORDER BY (event_timestamp, event_id);
 

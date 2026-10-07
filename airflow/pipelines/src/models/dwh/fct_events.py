@@ -13,14 +13,14 @@ class FctEvent(ClickHouseModel):
 
     event_sk: int | None = None
     event_id: UUID
+    user_id: UUID | None = None
     event_type_sk: int
     device_sk: int
     device_os_sk: int
     app_release_sk: int
-    track_sk: int
+    track_sk: int | None = None
     session_id: UUID
     playback_id: UUID | None = None
     event_timestamp: datetime
     received_at: datetime
     load_id: UUID
-    updated_at: datetime

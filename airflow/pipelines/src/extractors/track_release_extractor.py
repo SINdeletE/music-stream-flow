@@ -1,6 +1,6 @@
 from src.models.oltp import TrackRelease
 
-from .base import OltpExtractor
+from .oltp_extractor import OltpExtractor
 
 
 class TrackReleaseExtractor(OltpExtractor[TrackRelease]):

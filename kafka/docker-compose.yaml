@@ -4,6 +4,9 @@ services:
     container_name: kafka
     env_file:
       - .env
+    networks:
+      - default
+      - shared
     ports:
       - "${KAFKA_PORT}:${KAFKA_INTERNAL_PORT}"
       - "${KAFKA_CONTROLLER_PORT}:${KAFKA_CONTROLLER_INTERNAL_PORT}"
@@ -34,6 +37,11 @@ services:
           --bootstrap-server "kafka:$${KAFKA_INTERNAL_PORT}" \
           --create \
           --if-not-exists \
-          --topic music-events \
+          --topic $${KAFKA_TOPIC_NAME} \
           --partitions "$${KAFKA_NUM_PARTITIONS}" \
           --replication-factor 1
+
+networks:
+  shared:
+    external: true
+    name: music-stream-network

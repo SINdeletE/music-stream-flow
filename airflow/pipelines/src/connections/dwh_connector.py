@@ -3,7 +3,7 @@ from types import TracebackType
 import clickhouse_connect
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
-from .dwh_settings import DwhSettings
+from src.settings import DwhSettings
 
 class DwhConnector:
     def __init__(self, settings: DwhSettings | None = None) -> None:

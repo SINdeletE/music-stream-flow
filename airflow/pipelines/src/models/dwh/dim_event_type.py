@@ -13,5 +13,4 @@ class DimEventType(ClickHouseModel):
     event_type_sk: int | None = None
     name: str
     load_id: UUID
-    updated_at: datetime
     deleted_at: datetime | None = None

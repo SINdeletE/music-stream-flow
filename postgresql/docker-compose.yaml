@@ -4,6 +4,9 @@ services:
     restart: always
     env_file:
       - .env
+    networks:
+      - default
+      - shared
     volumes:
       - ../sql/music_oltp/ddl/01-create.sql:/docker-entrypoint-initdb.d/01-create.sql
       - ../sql/music_oltp/ddl/02-constraints.sql:/docker-entrypoint-initdb.d/02-constraints.sql
@@ -14,3 +17,8 @@ services:
       POSTGRES_DB: ${MUSIC_OLTP_DATABASE}
     ports:
       - "${MUSIC_OLTP_PORT}:${MUSIC_OLTP_INTERNAL_PORT}"
+
+networks:
+  shared:
+    external: true
+    name: music-stream-network

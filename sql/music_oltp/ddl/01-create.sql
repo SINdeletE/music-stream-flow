@@ -4,7 +4,6 @@ CREATE SCHEMA IF NOT EXISTS music_oltp;
 
 CREATE TABLE IF NOT EXISTS music_oltp.device (
     id UUID PRIMARY KEY,
-    user_id VARCHAR(128) NOT NULL,
     name VARCHAR(128) NOT NULL,
     device_version VARCHAR(16) NOT NULL,
 

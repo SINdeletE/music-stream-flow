@@ -11,6 +11,7 @@ from .dim_device_transformer import DimDeviceTransformer
 from .dim_genre_transformer import DimGenreTransformer
 from .dim_release_transformer import DimReleaseTransformer
 from .dim_track_transformer import DimTrackTransformer
+from .fct_events_transformer import FctEventsTransformer
 
 __all__ = [
     "BatchTransformer",
@@ -26,4 +27,5 @@ __all__ = [
     "DimGenreTransformer",
     "DimReleaseTransformer",
     "DimTrackTransformer",
+    "FctEventsTransformer",
 ]

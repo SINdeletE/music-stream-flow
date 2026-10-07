@@ -3,7 +3,6 @@
 entity device {
     * id: uuid <<PK>>
     --
-    * user_id: varchar(128)
     * name: varchar(128)
     * device_version: varchar(16)
     * created_at: timestamptz = now()

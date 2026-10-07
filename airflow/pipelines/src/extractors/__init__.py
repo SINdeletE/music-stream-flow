@@ -10,6 +10,7 @@ from .track_extractor import TrackExtractor
 from .track_artist_extractor import TrackArtistExtractor
 from .track_genre_extractor import TrackGenreExtractor
 from .track_release_extractor import TrackReleaseExtractor
+from .kafka_analytics_event_extractor import KafkaAnalyticsEventExtractor
 
 __all__ = [
     "AppReleaseExtractor",
@@ -24,4 +25,5 @@ __all__ = [
     "TrackArtistExtractor",
     "TrackGenreExtractor",
     "TrackReleaseExtractor",
+    "KafkaAnalyticsEventExtractor",
 ]

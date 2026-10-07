@@ -8,7 +8,7 @@ class DwhSettings(BaseSettings):
     music_dwh_db_name: str = Field(min_length=1)
     music_dwh_db_host: str = Field(default="localhost", min_length=1)
     music_dwh_db_port: int = Field(ge=1, le=65535)
- 
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore"

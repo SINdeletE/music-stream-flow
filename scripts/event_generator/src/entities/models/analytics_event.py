@@ -1,5 +1,5 @@
 from datetime import datetime
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from uuid import UUID
 from enum import Enum
 
@@ -14,13 +14,13 @@ class EventType(Enum):
 class AnalyticsEvent:
     event_id: UUID
     event_type: EventType
+    device_id: UUID
+    device_os_id: UUID
+    app_release_id: UUID
+    session_id: UUID
+
     event_timestamp: datetime
     received_at: datetime
-
-    user_id: UUID
-    session_id: UUID
+    user_id: UUID | None = None
     track_id: UUID | None = None
     playback_id: UUID | None = None
-
-    properties_schema_version: int = 1
-    properties: dict = field(default_factory=dict)

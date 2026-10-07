@@ -16,7 +16,6 @@ entity dim_device {
     * device_sk: BIGINT <<PK, generated>>
     --
     * device_id: UUID
-    * user_id: String
     * name: String
     * device_version: String
 
@@ -113,7 +112,6 @@ entity dim_event_type {
     --
     * name: String
     * load_id: UUID <<FK>>
-    * updated_at: DateTime64(3, 'UTC')
     deleted_at: Nullable(DateTime64(3, 'UTC'))
 }
 
@@ -164,18 +162,18 @@ entity fct_events {
     * event_sk: BIGINT <<PK, generated>>
     --
     * event_id: UUID
+    user_id: Nullable(UUID)
     * event_type_sk: BIGINT <<FK>>
     * device_sk: BIGINT <<FK>>
     * device_os_sk: BIGINT <<FK>>
     * app_release_sk: BIGINT <<FK>>
-    * track_sk: BIGINT <<FK>>
+    track_sk: Nullable(BIGINT) <<FK>>
     * session_id: UUID
 
     playback_id: Nullable(UUID)
     * event_timestamp: DateTime64(3, 'UTC')
     * received_at: DateTime64(3, 'UTC')
     * load_id: UUID <<FK>>
-    * updated_at: DateTime64(3, 'UTC')
 }
 
 ' Load audit
