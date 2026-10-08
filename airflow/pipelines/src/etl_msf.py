@@ -62,12 +62,12 @@ def create_load_task(task_id, pipeline):
     return load
 
 
-def create_load_kafka_events_task(task_id, num_partition):
-    @task(task_id=task_id)
-    async def load(interval):
-        context = get_current_context()
+# def create_load_kafka_events_task(task_id, num_partition):
+#     @task(task_id=task_id)
+#     async def load(interval):
+#         context = get_current_context()
 
-        await 
+#         await 
 
 # [timestamp_start, timestamp_end)
 first_date = pendulum.datetime(2026, 9, 28, 11, 31, tz="Europe/Moscow")

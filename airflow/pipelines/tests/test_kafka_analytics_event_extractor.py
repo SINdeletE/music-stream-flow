@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 from uuid import UUID
 
-from confluent_kafka import Consumer, KafkaError, KafkaException
+from confluent_kafka import Consumer, KafkaError, KafkaException, OFFSET_INVALID, TopicPartition
 
 from src.extractors.kafka_analytics_event_extractor import KafkaAnalyticsEventExtractor
 from src.models.kafka.analytics_event import EventType
@@ -35,9 +35,14 @@ def message(offset=0, **fields):
 
 
 class KafkaAnalyticsEventExtractorTests(unittest.IsolatedAsyncioTestCase):
-    def extractor(self, messages):
+    def extractor(self, messages, *, end_offset=None):
         self.consumer = Mock(spec=Consumer)
         self.consumer.consume.return_value = messages
+        self.consumer.assignment.return_value = [TopicPartition("music-events", 0)]
+        if end_offset is None:
+            end_offset = max((msg.offset() for msg in messages), default=-1) + 1
+        self.consumer.get_watermark_offsets.return_value = (0, end_offset)
+        self.consumer.position.return_value = [TopicPartition("music-events", 0, OFFSET_INVALID)]
         settings = SimpleNamespace(music_kafka_batch_size=1000, music_kafka_timeout=1.0)
         return KafkaAnalyticsEventExtractor(self.consumer, settings)
 
@@ -115,12 +120,89 @@ class KafkaAnalyticsEventExtractorTests(unittest.IsolatedAsyncioTestCase):
         failed_message.error.return_value = KafkaError(KafkaError._TIMED_OUT)
         with self.assertRaises(KafkaException):
             await self.read(self.extractor([failed_message]))
-        extractor = self.extractor([])
+        extractor = self.extractor([], end_offset=1)
         error = RuntimeError("consume failed")
         self.consumer.consume.side_effect = error
         with self.assertRaises(RuntimeError) as caught:
             await self.read(extractor)
         self.assertIs(caught.exception, error)
+
+    async def test_reads_multiple_batches_until_snapshot_end(self):
+        extractor = self.extractor([], end_offset=4)
+        self.consumer.consume.side_effect = [
+            [message(0), message(1)], [message(2)], [message(3)],
+        ]
+        result = await self.read(extractor)
+        self.assertEqual([offset for _, offset in result], [2, 3, 4])
+        self.assertEqual([len(batch) for batch, _ in result], [2, 1, 1])
+        self.assertEqual(self.consumer.consume.call_count, 3)
+        self.consumer.get_watermark_offsets.assert_called_once()
+
+    async def test_stops_at_timestamp_in_later_batch(self):
+        extractor = self.extractor([], end_offset=5)
+        self.consumer.consume.side_effect = [
+            [message(0), message(1)],
+            [message(2), message(3, event_timestamp=END.isoformat()), message(4)],
+        ]
+        result = await self.read(extractor)
+        self.assertEqual([offset for _, offset in result], [2, 3])
+        self.assertEqual([len(batch) for batch, _ in result], [2, 1])
+        self.assertEqual(self.consumer.consume.call_count, 2)
+
+    async def test_empty_poll_is_not_end_of_snapshot(self):
+        extractor = self.extractor([], end_offset=1)
+        self.consumer.consume.side_effect = [[], [message(0)]]
+        [(batch, next_offset)] = await self.read(extractor)
+        self.assertEqual(len(batch), 1)
+        self.assertEqual(next_offset, 1)
+        self.assertEqual(self.consumer.consume.call_count, 2)
+
+    async def test_new_messages_beyond_snapshot_are_deferred(self):
+        extractor = self.extractor([], end_offset=1)
+        self.consumer.consume.return_value = [message(0), message(1)]
+        [(batch, next_offset)] = await self.read(extractor)
+        self.assertEqual(len(batch), 1)
+        self.assertEqual(next_offset, 1)
+
+    async def test_consumer_position_handles_offset_gaps(self):
+        extractor = self.extractor([], end_offset=5)
+        self.consumer.consume.side_effect = [[message(0)], []]
+        self.consumer.position.side_effect = [
+            [TopicPartition("music-events", 0, 0)],
+            [TopicPartition("music-events", 0, 1)],
+            [TopicPartition("music-events", 0, 5)],
+        ]
+        [(batch, next_offset)] = await self.read(extractor)
+        self.assertEqual(len(batch), 1)
+        self.assertEqual(next_offset, 1)
+        self.assertEqual(self.consumer.consume.call_count, 2)
+
+    async def test_already_at_end_and_missing_assignment(self):
+        extractor = self.extractor([], end_offset=5)
+        self.consumer.position.return_value = [TopicPartition("music-events", 0, 5)]
+        self.assertEqual(await self.read(extractor), [])
+        self.consumer.consume.assert_not_called()
+        self.consumer.assignment.return_value = []
+        with self.assertRaisesRegex(RuntimeError, "assigned partition"):
+            await self.read(extractor)
+
+    async def test_partition_eof_flushes_pending_batch(self):
+        extractor = self.extractor([], end_offset=5)
+        eof = message(5)
+        eof.error.return_value = KafkaError(KafkaError._PARTITION_EOF)
+        self.consumer.consume.return_value = [message(0), eof]
+        [(batch, next_offset)] = await self.read(extractor)
+        self.assertEqual(len(batch), 1)
+        self.assertEqual(next_offset, 1)
+
+    async def test_position_error_propagates(self):
+        extractor = self.extractor([], end_offset=1)
+        self.consumer.position.return_value = [SimpleNamespace(
+            error=KafkaError(KafkaError._UNKNOWN_PARTITION), offset=OFFSET_INVALID,
+        )]
+        with self.assertRaises(KafkaException):
+            await self.read(extractor)
+        self.consumer.consume.assert_not_called()
 
     async def test_interval_validation_and_zero_interval(self):
         extractor = self.extractor([])

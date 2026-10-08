@@ -8,7 +8,7 @@ class KafkaConsumerConnector:
         self.settings = settings
         self.partition = partition
 
-    def __aenter__(self) -> Consumer:
+    async def __aenter__(self) -> Consumer:
         settings = self.settings
         if settings is None:
             settings = KafkaSettings()
@@ -21,16 +21,31 @@ class KafkaConsumerConnector:
 
         return self.consumer
 
-    async def commit(self, *, next_offset: int) -> None:
+    @staticmethod
+    def get_current_offset(consumer: Consumer, settings: KafkaSettings, partition: int):
+        tp = [TopicPartition(settings.music_kafka_topic_name, partition)]
+        result = consumer.committed(tp, settings.music_kafka_timeout)
+
+        return result[0].offset
+        
+
+    @staticmethod
+    async def commit(
+        consumer: Consumer,
+        settings: KafkaSettings,
+        partition: int,
+        *,
+        next_offset: int,
+    ) -> None:
         partitions = await asyncio.to_thread(
-            self.consumer.commit,
-            offsets=[TopicPartition(self.settings.music_kafka_topic_name, self.partition, next_offset)],
+            consumer.commit,
+            offsets=[TopicPartition(settings.music_kafka_topic_name, partition, next_offset)],
             asynchronous=False
         )
 
-        for partition in partitions:
-            if partition.error is not None:
-                raise KafkaException(partition.error)
+        for result in partitions:
+            if result.error is not None:
+                raise KafkaException(result.error)
 
-    def __aexit__(self, exc_type, exc, tb) -> None:
-        pass
+    async def __aexit__(self, exc_type, exc, tb) -> None:
+        self.consumer.close()

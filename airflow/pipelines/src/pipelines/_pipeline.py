@@ -7,7 +7,7 @@ from uuid import uuid7
 from src.settings import DwhSettings, OltpSettings
 from src.connections.dwh_connector import DwhConnector
 from src.connections.oltp_connector import OltpConnector
-from airflow.pipelines.src.extractors.oltp_extractor import OltpExtractor
+from src.extractors.oltp_extractor import OltpExtractor
 from src.loaders import ClickHouseLoader, EtlLoadLoader
 from src.models.dwh import ClickHouseModel, EtlLoad
 from src.models.oltp import Base
@@ -40,9 +40,10 @@ class BasePipeline(Generic[SourceT, TargetT]):
             raise ValueError("timestamp_start and timestamp_end must be timezone-aware")
         if timestamp_start > timestamp_end:
             raise ValueError("timestamp_start must not be after timestamp_end")
-
         if oltp_settings is None:
-            oltp_settings = OltpSettings()  # type: ignore[call-arg]
+            oltp_settings = OltpSettings() # type: ignore[call-arg]
+        if dwh_settings is None:
+            dwh_settings = DwhSettings() # type: ignore[call-arg]
 
         async with DwhConnector(dwh_settings) as client:
             audit_loader = EtlLoadLoader(client)
@@ -52,7 +53,7 @@ class BasePipeline(Generic[SourceT, TargetT]):
                 run_id=run_id,
                 task_id=task_id,
                 source_system="music_oltp",
-                target_table=cls.loader.model.table_to_insert(),
+                target_table=cls.loader.model.table_to_insert(), # type: ignore[call-arg]
                 interval_start=timestamp_start,
                 interval_end=timestamp_end,
                 started_at=datetime.now(UTC),
@@ -73,6 +74,7 @@ class BasePipeline(Generic[SourceT, TargetT]):
                         ) as batches:
                             async for source_batch in batches:
                                 audit.rows_read += len(source_batch)
+                                logger.info("Extractor read %s records for load_id=%s", len(source_batch), audit.load_id)
 
                                 dwh_batch = await cls.transformer.transform(
                                     source_batch, client, load_id=audit.load_id
@@ -80,6 +82,7 @@ class BasePipeline(Generic[SourceT, TargetT]):
                                 rows_written = await loader.load_batch(dwh_batch)
 
                                 audit.rows_written += rows_written
+                                logger.info("Loader loaded %s records for load_id=%s", len(source_batch), audit.load_id)
 
                 audit.state = "success"
                 audit.finished_at = datetime.now(UTC)
