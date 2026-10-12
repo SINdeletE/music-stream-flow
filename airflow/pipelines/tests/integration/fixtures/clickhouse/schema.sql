@@ -104,7 +104,7 @@ CREATE TABLE music_dwh.dim_event_type
     load_id UUID,
     deleted_at Nullable(DateTime64(3, 'UTC'))
 )
-ENGINE = MergeTree ORDER BY name;
+ENGINE = ReplacingMergeTree ORDER BY name;
 
 CREATE TABLE music_dwh.brg_device_app_release_all
 (
