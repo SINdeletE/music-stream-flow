@@ -1,8 +1,11 @@
 import asyncio
+import logging
 
-from confluent_kafka import Consumer, KafkaException, TopicPartition
+from confluent_kafka import OFFSET_STORED, Consumer, KafkaException, TopicPartition
 
 from src.settings import KafkaSettings
+
+logger = logging.getLogger(__name__)
 
 
 class KafkaConsumerConnector:
@@ -17,11 +20,29 @@ class KafkaConsumerConnector:
 
         self.consumer = Consumer(
             {
-                "bootstrap.servers": self.settings.kafka_bootstrap_servers_url,
+                "bootstrap.servers": settings.kafka_bootstrap_servers_url,
                 "group.id": f"{settings.music_kafka_topic_name}_{self.partition}",
                 "enable.auto.commit": False,
+                "auto.offset.reset": "earliest",
             }
         )
+
+        try:
+            self.consumer.assign(
+                [
+                    TopicPartition(
+                        settings.music_kafka_topic_name, self.partition, OFFSET_STORED
+                    )
+                ]
+            )
+        except Exception:
+            try:
+                self.consumer.close()
+            except Exception:
+                logger.exception(
+                    "Failed to close Kafka consumer after assignment error"
+                )
+            raise
 
         return self.consumer
 

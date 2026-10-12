@@ -11,6 +11,7 @@ from uuid import uuid4
 
 import clickhouse_connect
 from clickhouse_connect.driver.asyncclient import AsyncClient
+from src.settings import DwhSettings
 from testcontainers.core.container import DockerContainer
 
 CLICKHOUSE_IMAGE = "clickhouse/clickhouse-server:26.8-alpine"
@@ -59,6 +60,7 @@ class _ClickHouseFixture:
             with ExitStack() as resources:
                 container = (
                     DockerContainer(CLICKHOUSE_IMAGE)
+                    .with_kwargs(labels={"music-stream-flow.test-suite": "integration"})
                     .with_env("CLICKHOUSE_USER", username)
                     .with_env("CLICKHOUSE_PASSWORD", password)
                     .with_exposed_ports(8123)
@@ -109,3 +111,21 @@ async def clickhouse_client() -> AsyncGenerator[AsyncClient, None]:
             yield client
     finally:
         _fixture.close()
+
+
+@asynccontextmanager
+async def clickhouse_settings() -> AsyncGenerator[DwhSettings, None]:
+    """Yield settings for an isolated container without opening a pipeline client."""
+    fixture = _ClickHouseFixture()
+    try:
+        parameters = await asyncio.to_thread(fixture._ensure_started)
+        yield DwhSettings(
+            _env_file=None,
+            music_dwh_db_host=parameters["host"],
+            music_dwh_db_port=parameters["port"],
+            music_dwh_db_user=parameters["username"],
+            music_dwh_db_password=parameters["password"],
+            music_dwh_db_name="music_dwh",
+        )
+    finally:
+        await asyncio.to_thread(fixture.close)
