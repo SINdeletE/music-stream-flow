@@ -7,7 +7,7 @@ class KafkaSettings:
     music_kafka_port: str = Field(min_length=1)
     music_kafka_topic_name: str = Field(min_length=1)
     music_kafka_num_partitions: int = Field(min_length=1)
-    music_kafka_batch_size: int = Field(min_length=1)
+    music_kafka_batch_size: int = Field(min_length=1, ge=1)
     music_kafka_timeout: float = Field(min_length=1)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

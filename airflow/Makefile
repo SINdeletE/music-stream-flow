@@ -13,6 +13,14 @@ test:
 	@test -x "$(VENV_PYTHON)" || { echo "Сначала выполните make setup"; exit 1; }
 	PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m unittest discover -s pipelines/tests -v
 
+test-unit:
+	@test -x "$(VENV_PYTHON)" || { echo "Сначала выполните make setup"; exit 1; }
+	PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m unittest discover -s pipelines/tests/unit -v
+
+test-integration:
+	@test -x "$(VENV_PYTHON)" || { echo "Сначала выполните make setup"; exit 1; }
+	PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m unittest discover -s pipelines/tests/integration -v
+
 lint:
 	"$(VENV_PYTHON)" -m ruff check pipelines
 	"$(VENV_PYTHON)" -m ruff format --check pipelines
