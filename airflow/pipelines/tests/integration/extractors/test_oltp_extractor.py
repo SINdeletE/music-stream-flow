@@ -1,15 +1,16 @@
-import unittest
+from collections.abc import AsyncGenerator
 from contextlib import aclosing
 from datetime import datetime, timedelta
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, Mock
 from uuid import UUID
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import AsyncScalarResult, AsyncSession
-from sqlalchemy.orm import Session
+import pytest
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession
 from src.extractors import TrackExtractor
 from src.models.oltp import Track
+
+from tests.integration.fixtures.sqlite import sqlite_session
 
 
 def make_track(identifier: int, updated_at: datetime) -> Track:
@@ -25,86 +26,58 @@ def make_track(identifier: int, updated_at: datetime) -> Track:
     )
 
 
-class OltpExtractorIntegrationTests(unittest.IsolatedAsyncioTestCase):
-    async def test_oltp_extractor_positive_records(self):
-        """[integration] SQLite фильтрует записи по [start, end) и сортирует их."""
-        cases = [(20, 4), (19, 4), (0, 4), (1, 4), (5, 4), (5, 1), (5, 10)]
-        timestamp_start = datetime.fromisoformat("2026-10-11T12:00:00+00:00")
-        timestamp_end = datetime.fromisoformat("2026-10-11T13:00:00+00:00")
+@pytest_asyncio.fixture(scope="function", loop_scope="function")
+async def session() -> AsyncGenerator[AsyncSession, None]:
+    async with sqlite_session() as session:
+        yield session
 
-        for count, batch_size in cases:
-            with self.subTest(count=count, batch_size=batch_size):
-                matching = [
-                    make_track(i + 1, timestamp_start + timedelta(minutes=i % 3))
-                    for i in range(count)
-                ]
-                outside_interval = [
-                    make_track(1001, timestamp_start - timedelta(milliseconds=1)),
-                    make_track(1002, timestamp_end),
-                    make_track(1003, timestamp_end + timedelta(milliseconds=1)),
-                ]
-                expected_ids = [
-                    entity.id
-                    for entity in sorted(
-                        matching, key=lambda entity: (entity.updated_at, entity.id)
-                    )
-                ]
-                source = list(reversed(matching + outside_interval))
-                engine = create_engine(
-                    "sqlite:///:memory:",
-                    execution_options={"schema_translate_map": {"music_oltp": None}},
-                )
-                self.addCleanup(engine.dispose)
-                Track.__table__.create(engine)
 
-                with Session(engine) as database_session:
-                    database_session.add_all(source)
-                    database_session.commit()
+@pytest.mark.asyncio(loop_scope="function")
+@pytest.mark.parametrize(
+    ("count", "batch_size"),
+    [(20, 4), (19, 4), (0, 4), (1, 4), (5, 4), (5, 1), (5, 10)],
+)
+async def test_oltp_extractor_positive_records(
+    session: AsyncSession, count: int, batch_size: int
+):
+    """[integration] SQLite фильтрует записи по [start, end) и сортирует их."""
+    timestamp_start = datetime.fromisoformat("2026-10-11T12:00:00+00:00")
+    timestamp_end = datetime.fromisoformat("2026-10-11T13:00:00+00:00")
+    matching = [
+        make_track(i + 1, timestamp_start + timedelta(minutes=i % 3))
+        for i in range(count)
+    ]
+    outside_interval = [
+        make_track(1001, timestamp_start - timedelta(milliseconds=1)),
+        make_track(1002, timestamp_end),
+        make_track(1003, timestamp_end + timedelta(milliseconds=1)),
+    ]
+    expected_ids = [
+        entity.id
+        for entity in sorted(
+            matching, key=lambda entity: (entity.updated_at, entity.id)
+        )
+    ]
+    source = list(reversed(matching + outside_interval))
+    session.add_all(source)
+    await session.commit()
 
-                    client = AsyncMock(spec=AsyncSession)
-                    result = Mock(spec=AsyncScalarResult)
-                    result.close = AsyncMock()
+    settings = SimpleNamespace(music_oltp_batch_size=batch_size)
+    extractor = TrackExtractor(session, settings)
 
-                    async def stream_scalars(
-                        statement, *, database_session=database_session, result=result
-                    ):
-                        rows = database_session.scalars(statement).all()
+    actual_ids = []
+    actual_batch_sizes = []
+    async with aclosing(
+        extractor.read_batches(timestamp_start, timestamp_end)
+    ) as batches:
+        async for batch in batches:
+            assert isinstance(batch, list)
+            assert batch
+            assert len(batch) <= batch_size
+            actual_ids.extend(entity.id for entity in batch)
+            actual_batch_sizes.append(len(batch))
 
-                        async def partitions(size):
-                            for start in range(0, len(rows), size):
-                                yield rows[start : start + size]
-
-                        result.partitions.side_effect = partitions
-                        return result
-
-                    client.stream_scalars.side_effect = stream_scalars
-                    settings = SimpleNamespace(music_oltp_batch_size=batch_size)
-                    extractor = TrackExtractor(client, settings)
-
-                    actual_ids = []
-                    actual_batch_sizes = []
-                    async with aclosing(
-                        extractor.read_batches(timestamp_start, timestamp_end)
-                    ) as batches:
-                        async for batch in batches:
-                            self.assertIsInstance(batch, list)
-                            self.assertTrue(batch)
-                            self.assertLessEqual(len(batch), batch_size)
-                            actual_ids.extend(entity.id for entity in batch)
-                            actual_batch_sizes.append(len(batch))
-
-                    self.assertEqual(actual_ids, expected_ids)
-                    self.assertEqual(
-                        actual_batch_sizes,
-                        [
-                            min(batch_size, count - start)
-                            for start in range(0, count, batch_size)
-                        ],
-                    )
-                    client.stream_scalars.assert_awaited_once()
-                    statement = client.stream_scalars.await_args.args[0]
-                    self.assertEqual(
-                        statement.get_execution_options()["yield_per"], batch_size
-                    )
-                    result.partitions.assert_called_once_with(batch_size)
-                    result.close.assert_awaited_once()
+    assert actual_ids == expected_ids
+    assert actual_batch_sizes == [
+        min(batch_size, count - start) for start in range(0, count, batch_size)
+    ]

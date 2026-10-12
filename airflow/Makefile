@@ -2,24 +2,30 @@ PYTHON ?= python3
 VENV := .venv
 VENV_PYTHON := $(VENV)/bin/python
 
-.PHONY: setup test
+.PHONY: setup test test-unit test-integration lint lint-fix lint-format
 
 setup:
 	$(PYTHON) -m venv "$(VENV)"
 	"$(VENV_PYTHON)" -m pip install --upgrade pip
 	"$(VENV_PYTHON)" -m pip install -r requirements.txt
+	"$(VENV_PYTHON)" -m pip install -r requirements-test.txt
 
 test:
 	@test -x "$(VENV_PYTHON)" || { echo "Сначала выполните make setup"; exit 1; }
-	PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m unittest discover -s pipelines/tests -v
+	@echo "Unit tests"
+	@PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m pytest pipelines/tests/unit -v
+	@echo "Integration tests"
+	@PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m pytest pipelines/tests/integration -v
 
 test-unit:
 	@test -x "$(VENV_PYTHON)" || { echo "Сначала выполните make setup"; exit 1; }
-	PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m unittest discover -s pipelines/tests/unit -v
+	@echo "Unit tests"
+	@PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m pytest pipelines/tests/unit -v
 
 test-integration:
 	@test -x "$(VENV_PYTHON)" || { echo "Сначала выполните make setup"; exit 1; }
-	PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m unittest discover -s pipelines/tests/integration -v
+	@echo "Integration tests"
+	@PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m pytest pipelines/tests/integration -v
 
 lint:
 	"$(VENV_PYTHON)" -m ruff check pipelines

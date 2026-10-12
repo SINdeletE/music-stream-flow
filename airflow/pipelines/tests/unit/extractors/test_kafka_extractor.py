@@ -1,11 +1,11 @@
 import json
-import unittest
 from contextlib import aclosing
 from datetime import datetime
 from types import SimpleNamespace
 from unittest.mock import Mock
 from uuid import UUID
 
+import pytest
 from confluent_kafka import Consumer, Message, TopicPartition
 from src.extractors import KafkaAnalyticsEventExtractor
 
@@ -32,193 +32,148 @@ def make_message(offset: int) -> Mock:
     return message
 
 
-class KafkaAnalyticsEventExtractorTests(unittest.IsolatedAsyncioTestCase):
-    async def test_kafka_extractor_positive_records(self):
-        """[unit] Kafka возвращает батчи заданного размера и ожидаемые offsets."""
-        cases = [(20, 4), (19, 4), (0, 4), (1, 4), (5, 4), (5, 1), (5, 10)]
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("cnt", "batch_size"),
+    [(20, 4), (19, 4), (0, 4), (1, 4), (5, 4), (5, 1), (5, 10)],
+)
+async def test_kafka_extractor_positive_records(cnt: int, batch_size: int):
+    """[unit] Kafka возвращает батчи заданного размера и ожидаемые offsets."""
+    consumer = Mock(spec=Consumer)
+    settings = SimpleNamespace(
+        music_kafka_topic_name="music-events",
+        music_kafka_batch_size=batch_size,
+        music_kafka_timeout=1.0,
+    )
+    partition = TopicPartition(settings.music_kafka_topic_name, 0, 0)
+    consumer.assignment.return_value = [partition]
+    consumer.consume.side_effect = [
+        [make_message(i) for i in range(start, min(start + batch_size, cnt))]
+        for start in range(0, cnt, batch_size)
+    ]
+    consumer.get_watermark_offsets.return_value = (0, cnt)
+    consumer.position.side_effect = [
+        [TopicPartition(settings.music_kafka_topic_name, 0, offset)]
+        for offset in range(0, cnt, batch_size)
+    ]
 
-        for cnt, batch_size in cases:
-            with self.subTest(cnt=cnt, batch_size=batch_size):
-                consumer = Mock(spec=Consumer)
-                settings = SimpleNamespace(
-                    music_kafka_topic_name="music-events",
-                    music_kafka_batch_size=batch_size,
-                    music_kafka_timeout=1.0,
-                )
-                partition = TopicPartition(settings.music_kafka_topic_name, 0, 0)
-                consumer.assignment.return_value = [partition]
+    extractor = KafkaAnalyticsEventExtractor(consumer, settings)
+    timestamp_start = datetime.fromisoformat("2026-10-11T12:00:00+00:00")
+    timestamp_end = datetime.fromisoformat("2026-10-11T13:00:00+00:00")
+    expected_offsets = [
+        min(start + batch_size, cnt) for start in range(0, cnt, batch_size)
+    ]
+    fact_offsets = []
+    event_ids = []
 
-                count = cnt
-                consumer.consume.side_effect = [
-                    [
-                        make_message(i)
-                        for i in range(
-                            start, min(start + settings.music_kafka_batch_size, count)
-                        )
-                    ]
-                    for start in range(0, count, settings.music_kafka_batch_size)
-                ]
-                consumer.get_watermark_offsets.return_value = (0, count)
-                consumer.consume.return_value = [make_message(i) for i in range(count)]
-                consumer.position.side_effect = [
-                    [TopicPartition("music-events", 0, offset)]
-                    for offset in [
-                        i for i in range(0, count, settings.music_kafka_batch_size)
-                    ]
-                ]
+    async with aclosing(
+        extractor.read_batches(
+            timestamp_start=timestamp_start, timestamp_end=timestamp_end
+        ),
+    ) as batches:
+        async for source_batch, next_offset in batches:
+            assert len(source_batch) == min(batch_size, cnt - len(event_ids))
+            fact_offsets.append(next_offset)
+            event_ids.extend(event.event_id for event in source_batch)
 
-                extractor = KafkaAnalyticsEventExtractor(consumer, settings)
+    assert fact_offsets == expected_offsets
+    assert event_ids == [UUID(int=100 + offset) for offset in range(cnt)]
+    assert consumer.consume.call_count == len(expected_offsets)
 
-                timestamp_start = datetime.fromisoformat("2026-10-11T12:00:00+00:00")
-                timestamp_end = datetime.fromisoformat("2026-10-11T13:00:00+00:00")
 
-                expected_offsets = [
-                    min(start + settings.music_kafka_batch_size, count)
-                    for start in range(0, count, settings.music_kafka_batch_size)
-                ]
-                fact_offsets = []
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("cnt", "batch_size"),
+    [(20, 4), (19, 4), (0, 4), (1, 4), (5, 4)],
+)
+async def test_kafka_extractor_positive_equal_timestamps(cnt: int, batch_size: int):
+    """[unit] Равные timestamps дают пустой результат чтения Kafka."""
+    consumer = Mock(spec=Consumer)
+    consumer.get_watermark_offsets.return_value = (0, cnt)
+    settings = SimpleNamespace(
+        music_kafka_topic_name="music-events",
+        music_kafka_batch_size=batch_size,
+        music_kafka_timeout=1.0,
+    )
+    extractor = KafkaAnalyticsEventExtractor(consumer, settings)
+    timestamp = datetime.fromisoformat("2026-10-11T12:00:00+00:00")
 
-                iteration_offset = 0
-                async with aclosing(
-                    extractor.read_batches(
-                        timestamp_start=timestamp_start, timestamp_end=timestamp_end
-                    ),
-                ) as batches:
-                    async for source_batch, next_offset in batches:
-                        self.assertLessEqual(
-                            len(source_batch), settings.music_kafka_batch_size
-                        )
-                        fact_offsets.append(next_offset)
+    async with aclosing(
+        extractor.read_batches(timestamp_start=timestamp, timestamp_end=timestamp),
+    ) as batches:
+        result = [batch async for batch in batches]
 
-                        iteration_offset += settings.music_kafka_batch_size
+    assert result == []
+    consumer.assignment.assert_not_called()
+    consumer.get_watermark_offsets.assert_not_called()
+    consumer.consume.assert_not_called()
 
-                self.assertEqual(fact_offsets, expected_offsets)
 
-    async def test_kafka_extractor_positive_equal_timestamps(self):
-        """[unit] Равные timestamps дают пустой результат чтения Kafka."""
-        cases = [(20, 4), (19, 4), (0, 4), (1, 4), (5, 4)]
+@pytest.mark.asyncio
+async def test_kafka_extractor_negative_start_bigger_than_end():
+    """[unit] Начало позже конца интервала не вызывает чтение Kafka."""
+    consumer = Mock(spec=Consumer)
+    settings = SimpleNamespace(
+        music_kafka_topic_name="music-events",
+        music_kafka_batch_size=4,
+        music_kafka_timeout=1.0,
+    )
+    extractor = KafkaAnalyticsEventExtractor(consumer, settings)
+    timestamp_start = datetime.fromisoformat("2026-10-11T13:00:00+00:00")
+    timestamp_end = datetime.fromisoformat("2026-10-11T12:00:00+00:00")
 
-        for cnt, batch_size in cases:
-            with self.subTest(cnt=cnt, batch_size=batch_size):
-                consumer = Mock(spec=Consumer)
-                settings = SimpleNamespace(
-                    music_kafka_topic_name="music-events",
-                    music_kafka_batch_size=batch_size,
-                    music_kafka_timeout=1.0,
-                )
-                partition = TopicPartition(settings.music_kafka_topic_name, 0, 0)
-                consumer.assignment.return_value = [partition]
-
-                count = cnt
-                consumer.consume.side_effect = [
-                    [
-                        make_message(i)
-                        for i in range(
-                            start, min(start + settings.music_kafka_batch_size, count)
-                        )
-                    ]
-                    for start in range(0, count, settings.music_kafka_batch_size)
-                ]
-                consumer.get_watermark_offsets.return_value = (0, count)
-                consumer.consume.return_value = [make_message(i) for i in range(count)]
-                consumer.position.side_effect = [
-                    [TopicPartition("music-events", 0, offset)]
-                    for offset in [
-                        i for i in range(0, count, settings.music_kafka_batch_size)
-                    ]
-                ]
-
-                extractor = KafkaAnalyticsEventExtractor(consumer, settings)
-
-                timestamp_start = datetime.fromisoformat("2026-10-11T12:00:00+00:00")
-                timestamp_end = timestamp_start
-
-                expected_offsets = []
-                fact_offsets = []
-
-                iteration_offset = 0
-                async with aclosing(
-                    extractor.read_batches(
-                        timestamp_start=timestamp_start, timestamp_end=timestamp_end
-                    ),
-                ) as batches:
-                    async for source_batch, next_offset in batches:
-                        self.assertLessEqual(
-                            len(source_batch), settings.music_kafka_batch_size
-                        )
-                        fact_offsets.append(next_offset)
-
-                        iteration_offset += settings.music_kafka_batch_size
-
-                self.assertEqual(fact_offsets, expected_offsets)
-
-    async def test_kafka_extractor_negative_start_bigger_than_end(self):
-        """[unit] Начало позже конца интервала не вызывает чтение Kafka."""
-        consumer = Mock(spec=Consumer)
-        settings = SimpleNamespace(
-            music_kafka_topic_name="music-events",
-            music_kafka_batch_size=4,
-            music_kafka_timeout=1.0,
-        )
-
-        extractor = KafkaAnalyticsEventExtractor(consumer, settings)
-
-        timestamp_start = datetime.fromisoformat("2026-10-11T13:00:00+00:00")
-        timestamp_end = datetime.fromisoformat("2026-10-11T12:00:00+00:00")
-
-        try:
-            async with aclosing(
-                extractor.read_batches(
-                    timestamp_start=timestamp_start, timestamp_end=timestamp_end
-                ),
-            ) as batches:
-                await anext(batches)
-
-        except ValueError:
-            pass
-
-        consumer.consume.assert_not_called()
-
-    async def test_kafka_extractor_negative_non_utcoffset_timestamps(self):
-        """[unit] Даты без timezone не вызывают чтение Kafka."""
-        cases = [
-            (
-                datetime.fromisoformat("2026-10-11T12:00:00"),
-                datetime.fromisoformat("2026-10-11T13:00:00+00:00"),
+    with pytest.raises(
+        ValueError, match="timestamp_start must not be after timestamp_end"
+    ):
+        async with aclosing(
+            extractor.read_batches(
+                timestamp_start=timestamp_start, timestamp_end=timestamp_end
             ),
-            (
-                datetime.fromisoformat("2026-10-11T12:00:00+00:00"),
-                datetime.fromisoformat("2026-10-11T13:00:00"),
+        ) as batches:
+            await anext(batches)
+
+    consumer.consume.assert_not_called()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("timestamp_start", "timestamp_end"),
+    [
+        (
+            datetime.fromisoformat("2026-10-11T12:00:00"),
+            datetime.fromisoformat("2026-10-11T13:00:00+00:00"),
+        ),
+        (
+            datetime.fromisoformat("2026-10-11T12:00:00+00:00"),
+            datetime.fromisoformat("2026-10-11T13:00:00"),
+        ),
+        (
+            datetime.fromisoformat("2026-10-11T12:00:00"),
+            datetime.fromisoformat("2026-10-11T13:00:00"),
+        ),
+    ],
+    ids=["no_utcoffset_start", "no_utcoffset_end", "both_no_utcoffset"],
+)
+async def test_kafka_extractor_negative_non_utcoffset_timestamps(
+    timestamp_start: datetime, timestamp_end: datetime
+):
+    """[unit] Даты без timezone не вызывают чтение Kafka."""
+    consumer = Mock(spec=Consumer)
+    settings = SimpleNamespace(
+        music_kafka_topic_name="music-events",
+        music_kafka_batch_size=4,
+        music_kafka_timeout=1.0,
+    )
+    extractor = KafkaAnalyticsEventExtractor(consumer, settings)
+
+    with pytest.raises(
+        ValueError, match="timestamp_start and timestamp_end must be timezone-aware"
+    ):
+        async with aclosing(
+            extractor.read_batches(
+                timestamp_start=timestamp_start, timestamp_end=timestamp_end
             ),
-            (
-                datetime.fromisoformat("2026-10-11T12:00:00"),
-                datetime.fromisoformat("2026-10-11T13:00:00"),
-            ),
-        ]
+        ) as batches:
+            await anext(batches)
 
-        for t_start, t_end in cases:
-            with self.subTest(t_start=t_start, t_end=t_end):
-                consumer = Mock(spec=Consumer)
-                settings = SimpleNamespace(
-                    music_kafka_topic_name="music-events",
-                    music_kafka_batch_size=4,
-                    music_kafka_timeout=1.0,
-                )
-
-                extractor = KafkaAnalyticsEventExtractor(consumer, settings)
-
-                timestamp_start = t_start
-                timestamp_end = t_end
-
-                try:
-                    async with aclosing(
-                        extractor.read_batches(
-                            timestamp_start=timestamp_start, timestamp_end=timestamp_end
-                        ),
-                    ) as batches:
-                        await anext(batches)
-
-                except ValueError:
-                    pass
-
-                consumer.consume.assert_not_called()
+    consumer.consume.assert_not_called()
