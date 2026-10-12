@@ -1,9 +1,9 @@
-import pytest
-import pytest_asyncio
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
-from clickhouse_connect.driver import AsyncClient
 
+import pytest
+import pytest_asyncio
+from clickhouse_connect.driver import AsyncClient
 from src.loaders import (
     BrgArtistReleaseLoader,
     BrgDeviceAppReleaseLoader,
@@ -207,6 +207,7 @@ def make_loader_batches() -> dict[type[ClickHouseLoader], list[dict[str, object]
         )
     return cases
 
+
 @pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def client():
     async with clickhouse_client() as client:
@@ -215,10 +216,11 @@ async def client():
 
 @pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.parametrize(
-    ('loader_class', 'expected_rows'),
-    make_loader_batches().items()
+    ("loader_class", "expected_rows"), make_loader_batches().items()
 )
-async def test_clickhouse_loaders_positive_records(client: AsyncClient, loader_class, expected_rows):
+async def test_clickhouse_loaders_positive_records(
+    client: AsyncClient, loader_class, expected_rows
+):
     """[integration] Loader-ы сохраняют батчи в ClickHouse без изменения значений."""
 
     batch = [loader_class.model(**values) for values in expected_rows]
@@ -231,11 +233,10 @@ async def test_clickhouse_loaders_positive_records(client: AsyncClient, loader_c
     assert rows_written == len(expected_rows)
     count = await client.query(f"SELECT count() FROM {table}")
     assert count.result_rows[0][0] == len(expected_rows)
-    result = await client.query(
-        f"SELECT * FROM {table}", tz_mode="aware"
-    )
+    result = await client.query(f"SELECT * FROM {table}", tz_mode="aware")
     actual_rows = [
-        dict(zip(result.column_names, row, strict=True))
-        for row in result.result_rows
+        dict(zip(result.column_names, row, strict=True)) for row in result.result_rows
     ]
-    assert sorted(actual_rows, key=lambda x: int(x["load_id"])) == sorted(expected_rows, key=lambda x: int(x["load_id"]))
+    assert sorted(actual_rows, key=lambda x: int(x["load_id"])) == sorted(
+        expected_rows, key=lambda x: int(x["load_id"])
+    )
