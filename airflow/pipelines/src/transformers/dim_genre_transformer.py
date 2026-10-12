@@ -6,6 +6,8 @@ from src.mappers.genre_mapper import GenreMapper
 from src.models.dwh import DimGenre
 from src.models.oltp import Genre
 
+from ._dimension_lookup import lookup_dimension_sks
+
 
 class DimGenreTransformer:
     @staticmethod
@@ -18,24 +20,12 @@ class DimGenreTransformer:
         if not batch:
             return []
 
-        genre_sks: dict[UUID, int | None] = {}
-        for entity in batch:
-            genre_sks[entity.id] = None
-
-        result = await client.query(
-            query="""
-                SELECT
-                    genre_id,
-                    argMax(genre_sk, (updated_at, genre_sk)) AS genre_sk
-                FROM music_dwh.dim_genre
-                WHERE genre_id IN {genre_ids:Array(UUID)}
-                GROUP BY genre_id
-            """,
-            parameters={"genre_ids": list(genre_sks)},
+        genre_sks = await lookup_dimension_sks(
+            client,
+            (entity.id for entity in batch),
+            table_name="music_dwh.dim_genre",
+            entity_name="genre",
         )
-
-        for genre_id, genre_sk in result.result_rows:
-            genre_sks[genre_id] = genre_sk
 
         return [
             GenreMapper.to_dwh(

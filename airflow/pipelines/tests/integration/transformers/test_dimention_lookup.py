@@ -14,7 +14,7 @@ from src.loaders import (
     DimReleaseLoader,
     DimTrackLoader,
 )
-from src.transformers import resolve_dimension_sks
+from src.transformers import lookup_dimension_sks, resolve_dimension_sks
 
 from tests.integration.fixtures.clickhouse import clickhouse_client
 
@@ -90,45 +90,102 @@ def dimension_batches() -> dict[str, list[dict[str, object]]]:
                 "deleted_at": optional_timestamp,
             },
         }
-        for entity_name, values in attributes.items():
-            batches[entity_name].append(
-                {
-                    f"{entity_name}_sk": index,
-                    f"{entity_name}_id": UUID(int=100 + index),
-                    **values,
-                }
-            )
+        for entity_name, _, version_column in DIMENSIONS:
+            values = attributes[entity_name]
+            earlier = values[version_column]
+            later = earlier + timedelta(hours=1)
+            lower_sk = index * 10
+            higher_sk = lower_sk + 1
+            for version, sk in (
+                (later, lower_sk),
+                (later, higher_sk),
+                (earlier, higher_sk),
+                (earlier, lower_sk),
+            ):
+                batches[entity_name].append(
+                    {
+                        **values,
+                        f"{entity_name}_id": UUID(int=100 + index),
+                        f"{entity_name}_sk": sk,
+                        version_column: version,
+                    }
+                )
     return batches
 
 
-@pytest_asyncio.fixture(scope="function", loop_scope="function")
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def session() -> AsyncGenerator[AsyncClient, None]:
     async with clickhouse_client() as client:
         yield client
 
 
-@pytest.mark.asyncio(loop_scope="function")
+@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.parametrize("reverse_rows", [False, True], ids=["forward", "reverse"])
 @pytest.mark.parametrize(
     ("entity_name", "loader_class", "version_column"),
     DIMENSIONS,
     ids=[entity_name for entity_name, _, _ in DIMENSIONS],
 )
-async def test_dimention_lookup(
+async def test_lookup_dimension_sks_positive_records(
     session: AsyncClient,
     dimension_batches: dict[str, list[dict[str, object]]],
     entity_name,
     loader_class,
     version_column,
+    reverse_rows: bool,
 ):
-    """[integration] Lookup находит UUID -> SK во всех семи измерениях, включая SK 0."""
+    """[integration] Lookup выбирает максимальную версию и SK независимо от порядка строк."""
     rows = dimension_batches[entity_name]
+    if reverse_rows:
+        rows = list(reversed(rows))
     table_name = loader_class.model.table_to_insert()
     await session.command(f"TRUNCATE TABLE {table_name}")
     loader = loader_class(session)
     written = await loader.load_batch([loader_class.model(**row) for row in rows])
     assert written == len(rows)
 
-    expected = {row[f"{entity_name}_id"]: row[f"{entity_name}_sk"] for row in rows}
+    # lower_sk кратна 10, higher_sk = lower_sk + 1
+    # lower_sk = (0, 10), higher_sk = (1, 11)
+    expected = {UUID(int=100): 1, UUID(int=101): 11}
+    actual = await lookup_dimension_sks(
+        session,
+        expected,
+        table_name=table_name,
+        entity_name=entity_name,
+        version_column=version_column,
+    )
+
+    assert actual == expected
+
+
+@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.parametrize("reverse_rows", [False, True], ids=["forward", "reverse"])
+@pytest.mark.parametrize(
+    ("entity_name", "loader_class", "version_column"),
+    DIMENSIONS,
+    ids=[entity_name for entity_name, _, _ in DIMENSIONS],
+)
+async def test_resolve_dimension_sks_positive_records(
+    session: AsyncClient,
+    dimension_batches: dict[str, list[dict[str, object]]],
+    entity_name,
+    loader_class,
+    version_column,
+    reverse_rows: bool,
+):
+    """[integration] Lookup выбирает максимальную версию и SK независимо от порядка строк."""
+    rows = dimension_batches[entity_name]
+    if reverse_rows:
+        rows = list(reversed(rows))
+    table_name = loader_class.model.table_to_insert()
+    await session.command(f"TRUNCATE TABLE {table_name}")
+    loader = loader_class(session)
+    written = await loader.load_batch([loader_class.model(**row) for row in rows])
+    assert written == len(rows)
+
+    # lower_sk кратна 10, higher_sk = lower_sk + 1
+    # lower_sk = (0, 10), higher_sk = (1, 11)
+    expected = {UUID(int=100): 1, UUID(int=101): 11}
     actual = await resolve_dimension_sks(
         session,
         expected,
@@ -138,3 +195,41 @@ async def test_dimention_lookup(
     )
 
     assert actual == expected
+
+
+@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.parametrize("reverse_rows", [False, True], ids=["forward", "reverse"])
+@pytest.mark.parametrize(
+    ("entity_name", "loader_class", "version_column"),
+    DIMENSIONS,
+    ids=[entity_name for entity_name, _, _ in DIMENSIONS],
+)
+async def test_resolve_dimension_sks_negative_no_sk(
+    session: AsyncClient,
+    dimension_batches: dict[str, list[dict[str, object]]],
+    entity_name,
+    loader_class,
+    version_column,
+    reverse_rows: bool,
+):
+    """[integration] Lookup выбирает максимальную версию и SK независимо от порядка строк."""
+    rows = dimension_batches[entity_name]
+    if reverse_rows:
+        rows = list(reversed(rows))
+    table_name = loader_class.model.table_to_insert()
+    await session.command(f"TRUNCATE TABLE {table_name}")
+    loader = loader_class(session)
+    written = await loader.load_batch([loader_class.model(**row) for row in rows])
+    assert written == len(rows)
+
+    # lower_sk кратна 10, higher_sk = lower_sk + 1
+    # lower_sk = (0, 10), higher_sk = (1, 11)
+    expected = {UUID(int=100): 1, UUID(int=101): 11, UUID(int=102): None}
+    with pytest.raises(LookupError):
+        _ = await resolve_dimension_sks(
+            session,
+            expected,
+            table_name=table_name,
+            entity_name=entity_name,
+            version_column=version_column,
+        )

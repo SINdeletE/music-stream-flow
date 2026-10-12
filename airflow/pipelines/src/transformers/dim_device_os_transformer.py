@@ -6,6 +6,8 @@ from src.mappers.device_os_mapper import DeviceOsMapper
 from src.models.dwh import DimDeviceOs
 from src.models.oltp import DeviceOsHistory
 
+from ._dimension_lookup import lookup_dimension_sks
+
 
 class DimDeviceOsTransformer:
     @staticmethod
@@ -18,24 +20,13 @@ class DimDeviceOsTransformer:
         if not batch:
             return []
 
-        device_os_sks: dict[UUID, int | None] = {}
-        for entity in batch:
-            device_os_sks[entity.id] = None
-
-        result = await client.query(
-            query="""
-                SELECT
-                    device_os_id,
-                    argMax(device_os_sk, (valid_from, device_os_sk)) AS device_os_sk
-                FROM music_dwh.dim_device_os_all
-                WHERE device_os_id IN {device_os_ids:Array(UUID)}
-                GROUP BY device_os_id
-            """,
-            parameters={"device_os_ids": list(device_os_sks)},
+        device_os_sks = await lookup_dimension_sks(
+            client,
+            (entity.id for entity in batch),
+            table_name="music_dwh.dim_device_os_all",
+            entity_name="device_os",
+            version_column="valid_from",
         )
-
-        for device_os_id, device_os_sk in result.result_rows:
-            device_os_sks[device_os_id] = device_os_sk
 
         return [
             DeviceOsMapper.to_dwh(

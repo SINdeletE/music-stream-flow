@@ -6,6 +6,8 @@ from src.mappers.release_mapper import ReleaseMapper
 from src.models.dwh import DimRelease
 from src.models.oltp import Release
 
+from ._dimension_lookup import lookup_dimension_sks
+
 
 class DimReleaseTransformer:
     @staticmethod
@@ -18,24 +20,12 @@ class DimReleaseTransformer:
         if not batch:
             return []
 
-        release_sks: dict[UUID, int | None] = {}
-        for entity in batch:
-            release_sks[entity.id] = None
-
-        result = await client.query(
-            query="""
-                SELECT
-                    release_id,
-                    argMax(release_sk, (updated_at, release_sk)) AS release_sk
-                FROM music_dwh.dim_release_all
-                WHERE release_id IN {release_ids:Array(UUID)}
-                GROUP BY release_id
-            """,
-            parameters={"release_ids": list(release_sks)},
+        release_sks = await lookup_dimension_sks(
+            client,
+            (entity.id for entity in batch),
+            table_name="music_dwh.dim_release_all",
+            entity_name="release",
         )
-
-        for release_id, release_sk in result.result_rows:
-            release_sks[release_id] = release_sk
 
         return [
             ReleaseMapper.to_dwh(

@@ -6,6 +6,8 @@ from src.mappers.device_mapper import DeviceMapper
 from src.models.dwh import DimDevice
 from src.models.oltp import Device
 
+from ._dimension_lookup import lookup_dimension_sks
+
 
 class DimDeviceTransformer:
     @staticmethod
@@ -18,24 +20,12 @@ class DimDeviceTransformer:
         if not batch:
             return []
 
-        device_sks: dict[UUID, int | None] = {}
-        for entity in batch:
-            device_sks[entity.id] = None
-
-        result = await client.query(
-            query="""
-                SELECT
-                    device_id,
-                    argMax(device_sk, (updated_at, device_sk)) AS device_sk
-                FROM music_dwh.dim_device_all
-                WHERE device_id IN {device_ids:Array(UUID)}
-                GROUP BY device_id
-            """,
-            parameters={"device_ids": list(device_sks)},
+        device_sks = await lookup_dimension_sks(
+            client,
+            (entity.id for entity in batch),
+            table_name="music_dwh.dim_device_all",
+            entity_name="device",
         )
-
-        for device_id, device_sk in result.result_rows:
-            device_sks[device_id] = device_sk
 
         return [
             DeviceMapper.to_dwh(

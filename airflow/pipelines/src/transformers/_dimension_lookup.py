@@ -4,14 +4,14 @@ from uuid import UUID
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
 
-async def resolve_dimension_sks(
+async def lookup_dimension_sks(
     client: AsyncClient,
     entity_ids: Iterable[UUID],
     *,
     table_name: str,
     entity_name: str,
     version_column: str = "updated_at",
-) -> dict[UUID, int]:
+) -> dict[UUID, int | None]:
     entity_sks: dict[UUID, int | None] = {}
     for entity_id in entity_ids:
         entity_sks[entity_id] = None
@@ -34,6 +34,25 @@ async def resolve_dimension_sks(
 
     for entity_id, entity_sk in result.result_rows:
         entity_sks[entity_id] = entity_sk
+
+    return entity_sks
+
+
+async def resolve_dimension_sks(
+    client: AsyncClient,
+    entity_ids: Iterable[UUID],
+    *,
+    table_name: str,
+    entity_name: str,
+    version_column: str = "updated_at",
+) -> dict[UUID, int]:
+    entity_sks = await lookup_dimension_sks(
+        client,
+        entity_ids,
+        table_name=table_name,
+        entity_name=entity_name,
+        version_column=version_column,
+    )
 
     resolved_sks: dict[UUID, int] = {}
     for entity_id, entity_sk in entity_sks.items():

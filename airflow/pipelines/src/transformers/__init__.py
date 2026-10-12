@@ -1,4 +1,4 @@
-from ._dimension_lookup import resolve_dimension_sks
+from ._dimension_lookup import lookup_dimension_sks, resolve_dimension_sks
 from .batch_transformer import BatchTransformer
 from .brg_artist_release_transformer import BrgArtistReleaseTransformer
 from .brg_device_app_release_transformer import BrgDeviceAppReleaseTransformer
@@ -29,5 +29,6 @@ __all__ = [
     "DimReleaseTransformer",
     "DimTrackTransformer",
     "FctEventsTransformer",
+    "lookup_dimension_sks",
     "resolve_dimension_sks",
 ]

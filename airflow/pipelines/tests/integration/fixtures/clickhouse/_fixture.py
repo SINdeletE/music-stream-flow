@@ -1,5 +1,4 @@
 import asyncio
-import atexit
 import time
 from collections.abc import AsyncGenerator
 from contextlib import ExitStack, asynccontextmanager, closing
@@ -101,12 +100,12 @@ class _ClickHouseFixture:
                 self._parameters = None
 
 
-_fixture = _ClickHouseFixture()
-atexit.register(_fixture.close)
-
-
 @asynccontextmanager
 async def clickhouse_client() -> AsyncGenerator[AsyncClient, None]:
     """Yield a per-test client connected to the process-wide test container."""
-    async with _fixture.client() as client:
-        yield client
+    _fixture = _ClickHouseFixture()
+    try:
+        async with _fixture.client() as client:
+            yield client
+    finally:
+        _fixture.close()

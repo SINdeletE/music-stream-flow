@@ -6,6 +6,8 @@ from src.mappers.app_release_mapper import AppReleaseMapper
 from src.models.dwh import DimAppRelease
 from src.models.oltp import AppRelease
 
+from ._dimension_lookup import lookup_dimension_sks
+
 
 class DimAppReleaseTransformer:
     @staticmethod
@@ -18,24 +20,13 @@ class DimAppReleaseTransformer:
         if not batch:
             return []
 
-        app_release_sks: dict[UUID, int | None] = {}
-        for entity in batch:
-            app_release_sks[entity.id] = None
-
-        result = await client.query(
-            query="""
-                SELECT
-                    app_release_id,
-                    argMax(app_release_sk, (source_created_at, app_release_sk)) AS app_release_sk
-                FROM music_dwh.dim_app_release
-                WHERE app_release_id IN {app_release_ids:Array(UUID)}
-                GROUP BY app_release_id
-            """,
-            parameters={"app_release_ids": list(app_release_sks)},
+        app_release_sks = await lookup_dimension_sks(
+            client,
+            (entity.id for entity in batch),
+            table_name="music_dwh.dim_app_release",
+            entity_name="app_release",
+            version_column="source_created_at",
         )
-
-        for app_release_id, app_release_sk in result.result_rows:
-            app_release_sks[app_release_id] = app_release_sk
 
         return [
             AppReleaseMapper.to_dwh(

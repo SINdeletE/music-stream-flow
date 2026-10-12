@@ -6,6 +6,8 @@ from src.mappers.track_mapper import TrackMapper
 from src.models.dwh import DimTrack
 from src.models.oltp import Track
 
+from ._dimension_lookup import lookup_dimension_sks
+
 
 class DimTrackTransformer:
     @staticmethod
@@ -18,24 +20,12 @@ class DimTrackTransformer:
         if not batch:
             return []
 
-        track_sks: dict[UUID, int | None] = {}
-        for entity in batch:
-            track_sks[entity.id] = None
-
-        result = await client.query(
-            query="""
-                SELECT
-                    track_id,
-                    argMax(track_sk, (updated_at, track_sk)) AS track_sk
-                FROM music_dwh.dim_track_all
-                WHERE track_id IN {track_ids:Array(UUID)}
-                GROUP BY track_id
-            """,
-            parameters={"track_ids": list(track_sks)},
+        track_sks = await lookup_dimension_sks(
+            client,
+            (entity.id for entity in batch),
+            table_name="music_dwh.dim_track_all",
+            entity_name="track",
         )
-
-        for track_id, track_sk in result.result_rows:
-            track_sks[track_id] = track_sk
 
         return [
             TrackMapper.to_dwh(
