@@ -6,12 +6,12 @@ from uuid import UUID
 
 from confluent_kafka import Consumer, KafkaError, KafkaException
 
-from src.settings import KafkaSettings
 from src.models.kafka import AnalyticsEvent
 from src.models.kafka.analytics_event import EventType
+from src.settings import KafkaSettings
 
 
-class KafkaAnalyticsEventExtractor():
+class KafkaAnalyticsEventExtractor:
     def __init__(self, consumer: Consumer, settings: KafkaSettings) -> None:
         self.consumer = consumer
         self.batch_size = settings.music_kafka_batch_size
@@ -31,7 +31,9 @@ class KafkaAnalyticsEventExtractor():
 
         assignment = self.consumer.assignment()
         if not assignment:
-            raise RuntimeError("Consumer must have an assigned partition before reading")
+            raise RuntimeError(
+                "Consumer must have an assigned partition before reading"
+            )
         partition = assignment[0]
         low_offset, end_offset = await asyncio.to_thread(
             self.consumer.get_watermark_offsets,
@@ -82,11 +84,15 @@ class KafkaAnalyticsEventExtractor():
                     raise ValueError("Analytics event message must have a payload")
                 data = json.loads(payload)
                 if not isinstance(data, dict):
-                    raise ValueError("Analytics event payload must be a JSON object")
+                    raise TypeError("Analytics event payload must be a JSON object")
 
                 data["event_type"] = EventType(data["event_type"])
                 for name in (
-                    "event_id", "device_id", "device_os_id", "app_release_id", "session_id",
+                    "event_id",
+                    "device_id",
+                    "device_os_id",
+                    "app_release_id",
+                    "session_id",
                 ):
                     data[name] = UUID(data[name])
                 for name in ("user_id", "track_id", "playback_id"):

@@ -80,7 +80,9 @@ class FctEventsTransformer:
                 device_sk=device_sks[entity.device_id],
                 device_os_sk=device_os_sks[entity.device_os_id],
                 app_release_sk=app_release_sks[entity.app_release_id],
-                track_sk=track_sks[entity.track_id] if entity.track_id is not None else None,
+                track_sk=track_sks[entity.track_id]
+                if entity.track_id is not None
+                else None,
             )
             for entity in batch
         ]

@@ -5,12 +5,12 @@ from .device_extractor import DeviceExtractor
 from .device_os_extractor import DeviceOsExtractor
 from .genre_extractor import GenreExtractor
 from .installation_extractor import InstallationExtractor
+from .kafka_analytics_event_extractor import KafkaAnalyticsEventExtractor
 from .release_extractor import ReleaseExtractor
-from .track_extractor import TrackExtractor
 from .track_artist_extractor import TrackArtistExtractor
+from .track_extractor import TrackExtractor
 from .track_genre_extractor import TrackGenreExtractor
 from .track_release_extractor import TrackReleaseExtractor
-from .kafka_analytics_event_extractor import KafkaAnalyticsEventExtractor
 
 __all__ = [
     "AppReleaseExtractor",
@@ -20,10 +20,10 @@ __all__ = [
     "DeviceOsExtractor",
     "GenreExtractor",
     "InstallationExtractor",
+    "KafkaAnalyticsEventExtractor",
     "ReleaseExtractor",
-    "TrackExtractor",
     "TrackArtistExtractor",
+    "TrackExtractor",
     "TrackGenreExtractor",
     "TrackReleaseExtractor",
-    "KafkaAnalyticsEventExtractor",
 ]

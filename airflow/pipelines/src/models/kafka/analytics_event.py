@@ -1,14 +1,16 @@
-from datetime import datetime
 from dataclasses import dataclass
-from uuid import UUID
+from datetime import datetime
 from enum import Enum
+from uuid import UUID
+
 
 class EventType(Enum):
-    session_started         = 'session_started'
-    session_ended           = 'session_ended'
-    track_selected          = 'track_selected'
-    track_liked             = 'track_liked'
-    track_disliked          = 'track_disliked'
+    session_started = "session_started"
+    session_ended = "session_ended"
+    track_selected = "track_selected"
+    track_liked = "track_liked"
+    track_disliked = "track_disliked"
+
 
 @dataclass
 class AnalyticsEvent:

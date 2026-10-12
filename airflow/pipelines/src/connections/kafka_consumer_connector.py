@@ -1,7 +1,9 @@
 import asyncio
-from src.settings import KafkaSettings 
 
-from confluent_kafka import Consumer, TopicPartition, KafkaException
+from confluent_kafka import Consumer, KafkaException, TopicPartition
+
+from src.settings import KafkaSettings
+
 
 class KafkaConsumerConnector:
     def __init__(self, settings: KafkaSettings, partition: int) -> None:
@@ -13,11 +15,13 @@ class KafkaConsumerConnector:
         if settings is None:
             settings = KafkaSettings()
 
-        self.consumer = Consumer({
-            "bootstrap.servers": self.settings.kafka_bootstrap_servers_url,
-            "group.id": f"{settings.music_kafka_topic_name}_{self.partition}",
-            "enable.auto.commit": False
-        })
+        self.consumer = Consumer(
+            {
+                "bootstrap.servers": self.settings.kafka_bootstrap_servers_url,
+                "group.id": f"{settings.music_kafka_topic_name}_{self.partition}",
+                "enable.auto.commit": False,
+            }
+        )
 
         return self.consumer
 
@@ -27,7 +31,6 @@ class KafkaConsumerConnector:
         result = consumer.committed(tp, settings.music_kafka_timeout)
 
         return result[0].offset
-        
 
     @staticmethod
     async def commit(
@@ -39,8 +42,10 @@ class KafkaConsumerConnector:
     ) -> None:
         partitions = await asyncio.to_thread(
             consumer.commit,
-            offsets=[TopicPartition(settings.music_kafka_topic_name, partition, next_offset)],
-            asynchronous=False
+            offsets=[
+                TopicPartition(settings.music_kafka_topic_name, partition, next_offset)
+            ],
+            asynchronous=False,
         )
 
         for result in partitions:

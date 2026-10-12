@@ -15,10 +15,10 @@ from .track_genre import TrackGenre
 from .track_release import TrackRelease
 
 __all__ = [
-    "Base",
     "AppRelease",
     "Artist",
     "ArtistRelease",
+    "Base",
     "Device",
     "DeviceOsHistory",
     "Genre",

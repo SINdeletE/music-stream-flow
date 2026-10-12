@@ -3,8 +3,6 @@ from datetime import datetime
 import pendulum
 from airflow.sdk import DAG, Variable, cross_downstream, get_current_context, task
 
-from src.settings import KafkaSettings
-
 from src.pipelines import (
     BrgArtistReleasePipeline,
     BrgDeviceAppReleasePipeline,
@@ -19,7 +17,7 @@ from src.pipelines import (
     DimReleasePipeline,
     DimTrackPipeline,
 )
-
+from src.settings import KafkaSettings
 
 DIM_PIPELINES = (
     ("load_device", DimDevicePipeline),
@@ -42,7 +40,8 @@ BRG_PIPELINES = (
 
 kafka_settings = KafkaSettings()
 KAFKA_EVENTS_TASK_IDS = (
-    (f"load_kafka_events_partition_{str(i)}", i) for i in range(1, kafka_settings.music_kafka_num_partitions + 1)
+    (f"load_kafka_events_partition_{i!s}", i)
+    for i in range(1, kafka_settings.music_kafka_num_partitions + 1)
 )
 
 
@@ -50,7 +49,7 @@ def create_load_task(task_id, pipeline):
     @task(task_id=task_id)
     async def load(interval):
         context = get_current_context()
-        
+
         await pipeline.run(
             timestamp_start=interval["timestamp_start"],
             timestamp_end=interval["timestamp_end"],
@@ -67,7 +66,7 @@ def create_load_task(task_id, pipeline):
 #     async def load(interval):
 #         context = get_current_context()
 
-#         await 
+#         await
 
 # [timestamp_start, timestamp_end)
 first_date = pendulum.datetime(2026, 9, 28, 11, 31, tz="Europe/Moscow")
@@ -81,20 +80,27 @@ dag = DAG(
 )
 
 with dag:
+
     @task(task_id="fix_timestamp")
     def timestamp_fixing(ds=None, **kwargs):
         context = get_current_context()
 
         return {
             "timestamp_start": datetime.fromisoformat(
-                Variable.get("etl_msf_last_timestamp_end", default=first_date.isoformat())
+                Variable.get(
+                    "etl_msf_last_timestamp_end", default=first_date.isoformat()
+                )
             ),
-            "timestamp_end": context["data_interval_start"].in_timezone("Europe/Moscow")
+            "timestamp_end": context["data_interval_start"].in_timezone(
+                "Europe/Moscow"
+            ),
         }
 
     @task(task_id="swap_timestamp")
     def swap_timestamp(interval):
-        Variable.set("etl_msf_last_timestamp_end", interval["timestamp_end"].isoformat())
+        Variable.set(
+            "etl_msf_last_timestamp_end", interval["timestamp_end"].isoformat()
+        )
 
     task_timestamp_fixing = timestamp_fixing()
     task_load_dims = [

@@ -2,6 +2,7 @@ from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
+
 class DwhSettings(BaseSettings):
     music_dwh_db_user: str = Field(min_length=1)
     music_dwh_db_password: SecretStr = Field(min_length=8)
@@ -9,10 +10,7 @@ class DwhSettings(BaseSettings):
     music_dwh_db_host: str = Field(default="localhost", min_length=1)
     music_dwh_db_port: int = Field(ge=1, le=65535)
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property
     def database_url(self) -> URL:

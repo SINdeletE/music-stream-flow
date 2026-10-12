@@ -1,0 +1,24 @@
+PYTHON ?= python3
+VENV := .venv
+VENV_PYTHON := $(VENV)/bin/python
+
+.PHONY: setup test
+
+setup:
+	$(PYTHON) -m venv "$(VENV)"
+	"$(VENV_PYTHON)" -m pip install --upgrade pip
+	"$(VENV_PYTHON)" -m pip install -r requirements.txt
+
+test:
+	@test -x "$(VENV_PYTHON)" || { echo "Сначала выполните make setup"; exit 1; }
+	PYTHONPATH="$(CURDIR)/pipelines" "$(VENV_PYTHON)" -m unittest discover -s pipelines/tests -v
+
+lint:
+	"$(VENV_PYTHON)" -m ruff check pipelines
+	"$(VENV_PYTHON)" -m ruff format --check pipelines
+
+lint-fix:
+	"$(VENV_PYTHON)" -m ruff check --fix pipelines
+
+lint-format:
+	"$(VENV_PYTHON)" -m ruff format pipelines

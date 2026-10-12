@@ -3,7 +3,7 @@ from uuid import UUID
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
 from src.mappers import BrgTrackArtistMapper
-from src.models.dwh import BrgTrackArtist, DimTrack, DimArtist
+from src.models.dwh import BrgTrackArtist, DimArtist, DimTrack
 from src.models.oltp import TrackArtist
 
 from ._dimension_lookup import resolve_dimension_sks

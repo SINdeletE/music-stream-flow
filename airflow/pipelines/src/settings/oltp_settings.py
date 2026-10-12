@@ -2,6 +2,7 @@ from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
+
 class OltpSettings(BaseSettings):
     music_oltp_db_user: str = Field(min_length=1)
     music_oltp_db_password: SecretStr = Field(min_length=8)
@@ -10,10 +11,7 @@ class OltpSettings(BaseSettings):
     music_oltp_db_port: int = Field(ge=1, le=65535)
     music_oltp_batch_size: int = Field(ge=1)
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property
     def database_url(self) -> URL:

@@ -18,12 +18,12 @@ from .etl_loads import EtlLoad
 from .fct_events import FctEvent
 
 __all__ = [
-    "ClickHouseModel",
     "BrgArtistRelease",
     "BrgDeviceAppRelease",
     "BrgTrackArtist",
     "BrgTrackGenre",
     "BrgTrackRelease",
+    "ClickHouseModel",
     "DimAppRelease",
     "DimArtist",
     "DimDevice",

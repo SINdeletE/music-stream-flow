@@ -5,6 +5,7 @@ from clickhouse_connect.driver.asyncclient import AsyncClient
 
 from src.settings import DwhSettings
 
+
 class DwhConnector:
     def __init__(self, settings: DwhSettings | None = None) -> None:
         self._settings = settings

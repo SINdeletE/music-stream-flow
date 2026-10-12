@@ -16,12 +16,12 @@ from .etl_load_loader import EtlLoadLoader
 from .fct_event_loader import FctEventLoader
 
 __all__ = [
-    "ClickHouseLoader",
     "BrgArtistReleaseLoader",
     "BrgDeviceAppReleaseLoader",
     "BrgTrackArtistLoader",
     "BrgTrackGenreLoader",
     "BrgTrackReleaseLoader",
+    "ClickHouseLoader",
     "DimAppReleaseLoader",
     "DimArtistLoader",
     "DimDeviceLoader",

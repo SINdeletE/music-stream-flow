@@ -6,7 +6,6 @@ from clickhouse_connect.driver.asyncclient import AsyncClient
 from src.models.dwh import ClickHouseModel
 from src.models.oltp import Base
 
-
 SourceT = TypeVar("SourceT", bound=Base)
 TargetT = TypeVar("TargetT", bound=ClickHouseModel)
 

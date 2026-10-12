@@ -5,7 +5,6 @@ from clickhouse_connect.driver.asyncclient import AsyncClient
 
 from src.models.dwh import ClickHouseModel
 
-
 ModelT = TypeVar("ModelT", bound=ClickHouseModel)
 
 

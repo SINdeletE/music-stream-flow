@@ -7,9 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
-from src.settings import OltpSettings
 from src.models.oltp import Base
-
+from src.settings import OltpSettings
 
 EntityT = TypeVar("EntityT", bound=Base)
 

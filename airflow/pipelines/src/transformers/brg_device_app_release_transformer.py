@@ -3,7 +3,7 @@ from uuid import UUID
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
 from src.mappers import BrgDeviceAppReleaseMapper
-from src.models.dwh import BrgDeviceAppRelease, DimDevice, DimAppRelease
+from src.models.dwh import BrgDeviceAppRelease, DimAppRelease, DimDevice
 from src.models.oltp import Installation
 
 from ._dimension_lookup import resolve_dimension_sks

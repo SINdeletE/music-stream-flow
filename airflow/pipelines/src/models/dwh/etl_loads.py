@@ -23,7 +23,7 @@ class EtlLoad(ClickHouseModel):
     interval_end: datetime
     started_at: datetime
     finished_at: datetime | None = None
-    
+
     state: str
     rows_read: int
     rows_written: int
