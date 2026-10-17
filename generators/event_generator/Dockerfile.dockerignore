@@ -1,0 +1,15 @@
+**
+!generators/
+!generators/__init__.py
+!generators/event_generator/
+!generators/event_generator/*.py
+!generators/event_generator/requirements.txt
+!generators/event_generator/src/
+!generators/event_generator/src/**
+!generators/catalogs/
+!generators/catalogs/*.json
+**/__pycache__/
+**/*.py[cod]
+**/.env*
+**/.venv/
+**/tests/

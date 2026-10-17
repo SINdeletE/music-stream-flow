@@ -1,0 +1,9 @@
+# Send only runtime files to the build; never include env files or local data.
+**
+!generators/
+!generators/__init__.py
+!generators/catalogs/
+!generators/catalogs/*.json
+!generators/oltp_generator/
+!generators/oltp_generator/*.py
+!generators/oltp_generator/requirements.txt

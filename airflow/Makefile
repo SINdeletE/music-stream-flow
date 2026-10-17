@@ -7,8 +7,8 @@ VENV_PYTHON := $(VENV)/bin/python
 setup:
 	$(PYTHON) -m venv "$(VENV)"
 	"$(VENV_PYTHON)" -m pip install --upgrade pip
-	"$(VENV_PYTHON)" -m pip install -r requirements.txt
-	"$(VENV_PYTHON)" -m pip install -r requirements-test.txt
+	"$(VENV_PYTHON)" -m pip install -r ./pipelines/requirements.txt
+	"$(VENV_PYTHON)" -m pip install -r ./pipelines/requirements-test.txt
 
 test:
 	@test -x "$(VENV_PYTHON)" || { echo "Сначала выполните make setup"; exit 1; }

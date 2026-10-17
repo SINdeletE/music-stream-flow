@@ -1,0 +1,211 @@
+{
+  "ios_13": {
+    "name": "iOS",
+    "platform": "ios",
+    "versions": [
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "26"
+    ]
+  },
+  "ios_14": {
+    "name": "iOS",
+    "platform": "ios",
+    "versions": [
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "26"
+    ]
+  },
+  "ios_15": {
+    "name": "iOS",
+    "platform": "ios",
+    "versions": [
+      "15",
+      "16",
+      "17",
+      "18",
+      "26"
+    ]
+  },
+  "ios_16": {
+    "name": "iOS",
+    "platform": "ios",
+    "versions": [
+      "16",
+      "17",
+      "18",
+      "26"
+    ]
+  },
+  "ios_17": {
+    "name": "iOS",
+    "platform": "ios",
+    "versions": [
+      "17",
+      "18",
+      "26"
+    ]
+  },
+  "ios_18": {
+    "name": "iOS",
+    "platform": "ios",
+    "versions": [
+      "18",
+      "26"
+    ]
+  },
+  "android_10_13": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "10",
+      "11",
+      "12",
+      "13"
+    ]
+  },
+  "android_11_14": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "11",
+      "12",
+      "13",
+      "14"
+    ]
+  },
+  "android_12_14": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "12",
+      "13",
+      "14"
+    ]
+  },
+  "android_12_15": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "12",
+      "13",
+      "14",
+      "15"
+    ]
+  },
+  "android_13_15": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "13",
+      "14",
+      "15"
+    ]
+  },
+  "android_14_15": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "14",
+      "15"
+    ]
+  },
+  "android_15_15": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "15"
+    ]
+  },
+  "android_11_13": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "11",
+      "12",
+      "13"
+    ]
+  },
+  "android_13_14": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "13",
+      "14"
+    ]
+  },
+  "android_11_12": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "11",
+      "12"
+    ]
+  },
+  "android_12_13": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "12",
+      "13"
+    ]
+  },
+  "android_9_10": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "9",
+      "10"
+    ]
+  },
+  "harmony_2_3": {
+    "name": "HarmonyOS",
+    "platform": "harmonyos",
+    "versions": [
+      "2",
+      "3"
+    ]
+  },
+  "harmony_3_4": {
+    "name": "HarmonyOS",
+    "platform": "harmonyos",
+    "versions": [
+      "3",
+      "4"
+    ]
+  },
+  "harmony_4_4": {
+    "name": "HarmonyOS",
+    "platform": "harmonyos",
+    "versions": [
+      "4"
+    ]
+  },
+  "android_9_12": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "9",
+      "10",
+      "11",
+      "12"
+    ]
+  },
+  "android_10_12": {
+    "name": "Android",
+    "platform": "android",
+    "versions": [
+      "10",
+      "11",
+      "12"
+    ]
+  }
+}

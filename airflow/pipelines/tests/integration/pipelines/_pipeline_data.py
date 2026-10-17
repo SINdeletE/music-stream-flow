@@ -42,12 +42,16 @@ BATCH_SIZE = 4
 PARTITION = 1
 RECORD_COUNTS = (0, 8, 9)
 RECORD_IDS = ("zero_records", "full_batches", "partial_batch")
-NAIVE_INTERVALS = (
+NON_UTCOFFSET_INTERVALS = (
     (START.replace(tzinfo=None), END),
     (START, END.replace(tzinfo=None)),
     (START.replace(tzinfo=None), END.replace(tzinfo=None)),
 )
-NAIVE_IDS = ("naive_start", "naive_end", "both_naive")
+NON_UTCOFFSET_IDS = (
+    "non_utcoffset_start",
+    "non_utcoffset_end",
+    "both_non_utcoffset",
+)
 
 
 def forbid_connections(

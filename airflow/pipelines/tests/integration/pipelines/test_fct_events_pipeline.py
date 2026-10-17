@@ -20,8 +20,8 @@ from src.settings import DwhSettings
 from ._pipeline_data import (
     DAG_ID,
     END,
-    NAIVE_IDS,
-    NAIVE_INTERVALS,
+    NON_UTCOFFSET_IDS,
+    NON_UTCOFFSET_INTERVALS,
     PARTITION,
     RECORD_COUNTS,
     RECORD_IDS,
@@ -96,14 +96,14 @@ async def test_fct_events_pipeline_positive_records(
 
 @pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.parametrize(
-    "timestamp_start,timestamp_end", NAIVE_INTERVALS, ids=NAIVE_IDS
+    "timestamp_start,timestamp_end", NON_UTCOFFSET_INTERVALS, ids=NON_UTCOFFSET_IDS
 )
-async def test_fct_events_pipeline_negative_naive_timestamps(
+async def test_fct_events_pipeline_negative_non_utcoffset_timestamps(
     monkeypatch: pytest.MonkeyPatch,
     timestamp_start: datetime,
     timestamp_end: datetime,
 ):
-    """[integration] FctEventsPipeline отклоняет naive-время до открытия подключений."""
+    """[integration] FctEventsPipeline отклоняет время без timezone до открытия подключений."""
     guards = forbid_connections(monkeypatch, pipeline_module)
 
     with pytest.raises(ValueError):

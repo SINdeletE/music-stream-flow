@@ -1,0 +1,1002 @@
+[
+  {
+    "name": "iPhone 11",
+    "device_version": "1.0",
+    "os_profile": "ios_13"
+  },
+  {
+    "name": "iPhone 11 Pro",
+    "device_version": "1.0",
+    "os_profile": "ios_13"
+  },
+  {
+    "name": "iPhone 11 Pro Max",
+    "device_version": "1.0",
+    "os_profile": "ios_13"
+  },
+  {
+    "name": "iPhone SE (2nd generation)",
+    "device_version": "1.0",
+    "os_profile": "ios_13"
+  },
+  {
+    "name": "iPhone 12 mini",
+    "device_version": "1.0",
+    "os_profile": "ios_14"
+  },
+  {
+    "name": "iPhone 12",
+    "device_version": "1.0",
+    "os_profile": "ios_14"
+  },
+  {
+    "name": "iPhone 12 Pro",
+    "device_version": "1.0",
+    "os_profile": "ios_14"
+  },
+  {
+    "name": "iPhone 12 Pro Max",
+    "device_version": "1.0",
+    "os_profile": "ios_14"
+  },
+  {
+    "name": "iPhone 13 mini",
+    "device_version": "1.0",
+    "os_profile": "ios_15"
+  },
+  {
+    "name": "iPhone 13",
+    "device_version": "1.0",
+    "os_profile": "ios_15"
+  },
+  {
+    "name": "iPhone 13 Pro",
+    "device_version": "1.0",
+    "os_profile": "ios_15"
+  },
+  {
+    "name": "iPhone 13 Pro Max",
+    "device_version": "1.0",
+    "os_profile": "ios_15"
+  },
+  {
+    "name": "iPhone SE (3rd generation)",
+    "device_version": "1.0",
+    "os_profile": "ios_15"
+  },
+  {
+    "name": "iPhone 14",
+    "device_version": "1.0",
+    "os_profile": "ios_16"
+  },
+  {
+    "name": "iPhone 14 Plus",
+    "device_version": "1.0",
+    "os_profile": "ios_16"
+  },
+  {
+    "name": "iPhone 14 Pro",
+    "device_version": "1.0",
+    "os_profile": "ios_16"
+  },
+  {
+    "name": "iPhone 14 Pro Max",
+    "device_version": "1.0",
+    "os_profile": "ios_16"
+  },
+  {
+    "name": "iPhone 15",
+    "device_version": "1.0",
+    "os_profile": "ios_17"
+  },
+  {
+    "name": "iPhone 15 Plus",
+    "device_version": "1.0",
+    "os_profile": "ios_17"
+  },
+  {
+    "name": "iPhone 15 Pro",
+    "device_version": "1.0",
+    "os_profile": "ios_17"
+  },
+  {
+    "name": "iPhone 15 Pro Max",
+    "device_version": "1.0",
+    "os_profile": "ios_17"
+  },
+  {
+    "name": "iPhone 16",
+    "device_version": "1.0",
+    "os_profile": "ios_18"
+  },
+  {
+    "name": "iPhone 16 Plus",
+    "device_version": "1.0",
+    "os_profile": "ios_18"
+  },
+  {
+    "name": "iPhone 16 Pro",
+    "device_version": "1.0",
+    "os_profile": "ios_18"
+  },
+  {
+    "name": "iPhone 16 Pro Max",
+    "device_version": "1.0",
+    "os_profile": "ios_18"
+  },
+  {
+    "name": "iPhone 16e",
+    "device_version": "1.0",
+    "os_profile": "ios_18"
+  },
+  {
+    "name": "Samsung Galaxy S20",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "Samsung Galaxy S20+",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "Samsung Galaxy S20 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "Samsung Galaxy S21",
+    "device_version": "1.0",
+    "os_profile": "android_11_14"
+  },
+  {
+    "name": "Samsung Galaxy S21+",
+    "device_version": "1.0",
+    "os_profile": "android_11_14"
+  },
+  {
+    "name": "Samsung Galaxy S21 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_11_14"
+  },
+  {
+    "name": "Samsung Galaxy S21 FE",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "Samsung Galaxy S22",
+    "device_version": "1.0",
+    "os_profile": "android_12_15"
+  },
+  {
+    "name": "Samsung Galaxy S22+",
+    "device_version": "1.0",
+    "os_profile": "android_12_15"
+  },
+  {
+    "name": "Samsung Galaxy S22 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_12_15"
+  },
+  {
+    "name": "Samsung Galaxy S23",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Samsung Galaxy S23+",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Samsung Galaxy S23 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Samsung Galaxy S23 FE",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Samsung Galaxy S24",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy S24+",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy S24 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy S24 FE",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy S25",
+    "device_version": "1.0",
+    "os_profile": "android_15_15"
+  },
+  {
+    "name": "Samsung Galaxy S25+",
+    "device_version": "1.0",
+    "os_profile": "android_15_15"
+  },
+  {
+    "name": "Samsung Galaxy S25 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_15_15"
+  },
+  {
+    "name": "Samsung Galaxy Z Fold2",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "Samsung Galaxy Z Fold3",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Samsung Galaxy Z Fold4",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "Samsung Galaxy Z Fold5",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Samsung Galaxy Z Fold6",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy Z Flip3",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Samsung Galaxy Z Flip4",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "Samsung Galaxy Z Flip5",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Samsung Galaxy Z Flip6",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy A14",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Samsung Galaxy A15",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy A16",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy A34",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Samsung Galaxy A35",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy A52",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Samsung Galaxy A53",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "Samsung Galaxy A54",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Samsung Galaxy A55",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Samsung Galaxy M34",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Google Pixel 6",
+    "device_version": "1.0",
+    "os_profile": "android_12_15"
+  },
+  {
+    "name": "Google Pixel 6 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_15"
+  },
+  {
+    "name": "Google Pixel 6a",
+    "device_version": "1.0",
+    "os_profile": "android_12_15"
+  },
+  {
+    "name": "Google Pixel 7",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Google Pixel 7 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Google Pixel 7a",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Google Pixel Fold",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Google Pixel 8",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Google Pixel 8 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Google Pixel 8a",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Google Pixel 9",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Google Pixel 9 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Google Pixel 9 Pro XL",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Google Pixel 9 Pro Fold",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Xiaomi Mi 11",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Xiaomi Mi 11 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Xiaomi 11T Pro",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Xiaomi 12",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "Xiaomi 12 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "Xiaomi 12T Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "Xiaomi 13",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Xiaomi 13 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Xiaomi 13 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Xiaomi 13T Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Xiaomi 14",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Xiaomi 14 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Xiaomi 14T Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Redmi Note 10 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_11_12"
+  },
+  {
+    "name": "Redmi Note 11 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_11_12"
+  },
+  {
+    "name": "Redmi Note 12 Pro 5G",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "Redmi Note 13 Pro+ 5G",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "POCO X5 Pro 5G",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "POCO X6 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "POCO F5",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "POCO F6",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "OnePlus 9",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "OnePlus 9 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "OnePlus 10 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "OnePlus 10T",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "OnePlus 11",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "OnePlus 12",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "OnePlus 13",
+    "device_version": "1.0",
+    "os_profile": "android_15_15"
+  },
+  {
+    "name": "OnePlus Nord 2",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "OnePlus Nord 3",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "OnePlus Nord 4",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Huawei P30 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_9_10"
+  },
+  {
+    "name": "Huawei P40 Pro",
+    "device_version": "1.0",
+    "os_profile": "harmony_2_3"
+  },
+  {
+    "name": "Huawei P50 Pro",
+    "device_version": "1.0",
+    "os_profile": "harmony_2_3"
+  },
+  {
+    "name": "Huawei P60 Pro",
+    "device_version": "1.0",
+    "os_profile": "harmony_3_4"
+  },
+  {
+    "name": "Huawei Mate 40 Pro",
+    "device_version": "1.0",
+    "os_profile": "harmony_2_3"
+  },
+  {
+    "name": "Huawei Mate 50 Pro",
+    "device_version": "1.0",
+    "os_profile": "harmony_3_4"
+  },
+  {
+    "name": "Huawei Mate 60 Pro",
+    "device_version": "1.0",
+    "os_profile": "harmony_4_4"
+  },
+  {
+    "name": "Huawei nova 11 Pro",
+    "device_version": "1.0",
+    "os_profile": "harmony_3_4"
+  },
+  {
+    "name": "Honor 70",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "Honor 90",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Honor 200 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Honor Magic4 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "Honor Magic5 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Honor Magic6 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Honor Magic V2",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Honor Magic V3",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "OPPO Find X3 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "OPPO Find X5 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "OPPO Find X6 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "OPPO Find X7 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "OPPO Reno8 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "OPPO Reno10 Pro+",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "OPPO Reno11 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "OPPO Reno12 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "vivo X80 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "vivo X90 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "vivo X100 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "vivo X200 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_15_15"
+  },
+  {
+    "name": "vivo V27 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "vivo V29 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "vivo V30 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "realme GT 2 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "realme GT 5",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "realme GT 6",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "realme 11 Pro+",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "realme 12 Pro+",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Motorola Edge 30 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "Motorola Edge 40 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Motorola Edge 50 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Motorola Razr 40 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Motorola Razr 50 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Motorola ThinkPhone",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Sony Xperia 1 IV",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "Sony Xperia 1 V",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Sony Xperia 1 VI",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Sony Xperia 5 IV",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "Sony Xperia 5 V",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Sony Xperia 10 V",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Sony Xperia 10 VI",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Nothing Phone (1)",
+    "device_version": "1.0",
+    "os_profile": "android_12_14"
+  },
+  {
+    "name": "Nothing Phone (2)",
+    "device_version": "1.0",
+    "os_profile": "android_13_15"
+  },
+  {
+    "name": "Nothing Phone (2a)",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Nothing Phone (3a)",
+    "device_version": "1.0",
+    "os_profile": "android_15_15"
+  },
+  {
+    "name": "ASUS Zenfone 9",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "ASUS Zenfone 10",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "ASUS Zenfone 11 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "ASUS ROG Phone 6",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "ASUS ROG Phone 7",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "ASUS ROG Phone 8 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_14_15"
+  },
+  {
+    "name": "Nokia G60 5G",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "Nokia XR20",
+    "device_version": "1.0",
+    "os_profile": "android_11_12"
+  },
+  {
+    "name": "Nokia X30 5G",
+    "device_version": "1.0",
+    "os_profile": "android_12_13"
+  },
+  {
+    "name": "Fairphone 4",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Fairphone 5",
+    "device_version": "1.0",
+    "os_profile": "android_13_14"
+  },
+  {
+    "name": "Google Pixel 4",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "Google Pixel 4 XL",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "Google Pixel 4a",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "Google Pixel 4a 5G",
+    "device_version": "1.0",
+    "os_profile": "android_11_14"
+  },
+  {
+    "name": "Google Pixel 5",
+    "device_version": "1.0",
+    "os_profile": "android_11_14"
+  },
+  {
+    "name": "Google Pixel 5a",
+    "device_version": "1.0",
+    "os_profile": "android_11_14"
+  },
+  {
+    "name": "Samsung Galaxy S10",
+    "device_version": "1.0",
+    "os_profile": "android_9_12"
+  },
+  {
+    "name": "Samsung Galaxy S10+",
+    "device_version": "1.0",
+    "os_profile": "android_9_12"
+  },
+  {
+    "name": "Samsung Galaxy S10e",
+    "device_version": "1.0",
+    "os_profile": "android_9_12"
+  },
+  {
+    "name": "Samsung Galaxy Note10",
+    "device_version": "1.0",
+    "os_profile": "android_9_12"
+  },
+  {
+    "name": "Samsung Galaxy Note10+",
+    "device_version": "1.0",
+    "os_profile": "android_9_12"
+  },
+  {
+    "name": "Samsung Galaxy Note20",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "Samsung Galaxy Note20 Ultra",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "OnePlus 8",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "OnePlus 8 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_10_13"
+  },
+  {
+    "name": "OnePlus 8T",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "OnePlus Nord",
+    "device_version": "1.0",
+    "os_profile": "android_10_12"
+  },
+  {
+    "name": "Xiaomi Mi 10",
+    "device_version": "1.0",
+    "os_profile": "android_10_12"
+  },
+  {
+    "name": "Xiaomi Mi 10 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_10_12"
+  },
+  {
+    "name": "Xiaomi Mi 10T Pro",
+    "device_version": "1.0",
+    "os_profile": "android_10_12"
+  },
+  {
+    "name": "Sony Xperia 1 III",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Sony Xperia 5 III",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "ASUS Zenfone 8",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "ASUS ROG Phone 5",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  },
+  {
+    "name": "Motorola Edge 20 Pro",
+    "device_version": "1.0",
+    "os_profile": "android_11_13"
+  }
+]

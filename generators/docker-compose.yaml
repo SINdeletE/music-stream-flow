@@ -1,0 +1,27 @@
+services:
+  oltp-generator:
+    build:
+      context: ..
+      dockerfile: generators/oltp_generator/Dockerfile
+    env_file:
+      - .env
+    init: true
+    stop_grace_period: 15s
+    networks:
+      - shared
+
+  event-generator:
+    build:
+      context: ..
+      dockerfile: generators/event_generator/Dockerfile
+    env_file:
+      - .env
+    init: true
+    stop_grace_period: 70s
+    networks:
+      - shared
+
+networks:
+  shared:
+    external: true
+    name: music-stream-network

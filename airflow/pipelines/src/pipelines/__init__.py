@@ -10,6 +10,7 @@ from .dim_device_pipeline import DimDevicePipeline
 from .dim_genre_pipeline import DimGenrePipeline
 from .dim_release_pipeline import DimReleasePipeline
 from .dim_track_pipeline import DimTrackPipeline
+from .fct_events_pipeline import FctEventsPipeline
 
 __all__ = [
     "BrgArtistReleasePipeline",
@@ -24,4 +25,5 @@ __all__ = [
     "DimGenrePipeline",
     "DimReleasePipeline",
     "DimTrackPipeline",
+    "FctEventsPipeline",
 ]
