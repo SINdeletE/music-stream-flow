@@ -12,9 +12,19 @@ from src.settings import KafkaSettings
 
 
 class KafkaAnalyticsEventExtractor:
-    def __init__(self, consumer: Consumer, settings: KafkaSettings) -> None:
+    def __init__(
+        self,
+        consumer: Consumer,
+        settings: KafkaSettings,
+        *,
+        batch_size: int | None = None,
+    ) -> None:
         self.consumer = consumer
-        self.batch_size = settings.music_kafka_batch_size
+        self.batch_size = (
+            settings.music_kafka_batch_size if batch_size is None else batch_size
+        )
+        if self.batch_size < 1:
+            raise ValueError("batch_size must be positive")
         self.timeout = settings.music_kafka_timeout
 
     async def read_batches(

@@ -25,6 +25,7 @@ class DwhConnector:
             username=settings.music_dwh_db_user,
             password=settings.music_dwh_db_password.get_secret_value(),
             database=settings.music_dwh_db_name,
+            settings={"distributed_foreground_insert": 1, "insert_quorum": "auto"},
         )
         return self._client
 

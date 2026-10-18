@@ -1,4 +1,4 @@
-COMPOSE = docker compose --env-file "$(CURDIR)/.env" -f "$(CURDIR)/docker-compose.yml"
+COMPOSE = docker compose --env-file "$(CURDIR)/.env" -f "$(CURDIR)/docker-compose.yaml"
 
 .PHONY: config prepare-data check up init start stop down
 config:

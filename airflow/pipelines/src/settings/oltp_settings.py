@@ -10,6 +10,7 @@ class OltpSettings(BaseSettings):
     music_oltp_db_host: str = Field(default="localhost", min_length=1)
     music_oltp_db_port: int = Field(ge=1, le=65535)
     music_oltp_batch_size: int = Field(ge=1)
+    music_oltp_staging_batch_size: int = Field(default=1000, ge=1)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

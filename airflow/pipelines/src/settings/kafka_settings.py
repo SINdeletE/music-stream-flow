@@ -8,6 +8,7 @@ class KafkaSettings(BaseSettings):
     music_kafka_topic_name: str = Field(min_length=1)
     music_kafka_num_partitions: int = Field(ge=1)
     music_kafka_batch_size: int = Field(ge=1)
+    music_kafka_staging_batch_size: int = Field(default=50, ge=1)
     music_kafka_timeout: float = Field(gt=0)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

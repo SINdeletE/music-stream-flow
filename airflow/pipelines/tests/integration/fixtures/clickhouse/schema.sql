@@ -1,5 +1,5 @@
 -- Standalone insertion schema. No replication, Distributed or Keeper defaults.
--- Column names and types follow sql/dwh/ddl/01-create.sql.
+-- Column names and types follow 01-create.sql and 03-staging.sql.
 CREATE DATABASE music_dwh;
 
 CREATE TABLE music_dwh.dim_device_all
@@ -189,3 +189,52 @@ CREATE TABLE music_dwh.etl_loads
     error_msg Nullable(String)
 )
 ENGINE = MergeTree ORDER BY load_id;
+
+CREATE TABLE music_dwh.stg_datasets_all
+(
+    source LowCardinality(String),
+    dag_id String,
+    run_id String,
+    task_id String,
+    interval_start DateTime64(6, 'UTC'),
+    interval_end DateTime64(6, 'UTC'),
+    dataset_id UUID,
+    created_at DateTime64(6, 'UTC'),
+    batch_count UInt64,
+    row_count UInt64,
+    dimension_counts Map(String, UInt64),
+    topic Nullable(String),
+    partition Nullable(Int32),
+    committed_offset Nullable(Int64),
+    first_offset Nullable(Int64),
+    next_offset Nullable(Int64),
+    data_expires_at Nullable(DateTime('UTC'))
+)
+ENGINE = MergeTree
+ORDER BY dataset_id;
+
+CREATE TABLE music_dwh.stg_batches_all
+(
+    dataset_id UUID,
+    batch_number UInt64,
+    payload String,
+    row_count UInt64,
+    next_offset Nullable(Int64),
+    stored_at DateTime('UTC')
+)
+ENGINE = MergeTree
+PARTITION BY toDate(stored_at)
+ORDER BY (dataset_id, batch_number)
+TTL stored_at + INTERVAL 3 DAY DELETE;
+
+CREATE TABLE music_dwh.stg_missing_dimension_ids_all
+(
+    dataset_id UUID,
+    dimension LowCardinality(String),
+    entity_id UUID,
+    stored_at DateTime('UTC')
+)
+ENGINE = MergeTree
+PARTITION BY toDate(stored_at)
+ORDER BY (dataset_id, dimension, entity_id)
+TTL stored_at + INTERVAL 3 DAY DELETE;
