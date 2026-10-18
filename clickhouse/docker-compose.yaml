@@ -32,16 +32,14 @@ services:
       retries: 12
       start_period: 20s
     networks:
-      clickhouse-network:
-        ipv4_address: 172.23.0.10
+      clickhouse-network: {}
 
   clickhouse01:
     <<: *clickhouse-common
     container_name: clickhouse01
     hostname: clickhouse01
     networks:
-      clickhouse-network:
-        ipv4_address: 172.23.0.11
+      clickhouse-network: {}
       shared: {}
     ports:
       - "${CLICKHOUSE_BIND_HOST:-127.0.0.1}:${CLICKHOUSE_HTTP_PORT:-8123}:8123"
@@ -56,8 +54,7 @@ services:
     container_name: clickhouse02
     hostname: clickhouse02
     networks:
-      clickhouse-network:
-        ipv4_address: 172.23.0.12
+      clickhouse-network: {}
       shared: {}
     volumes:
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse02/config.xml:/etc/clickhouse-server/config.xml:ro
@@ -69,8 +66,7 @@ services:
     container_name: clickhouse03
     hostname: clickhouse03
     networks:
-      clickhouse-network:
-        ipv4_address: 172.23.0.13
+      clickhouse-network: {}
       shared: {}
     volumes:
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse03/config.xml:/etc/clickhouse-server/config.xml:ro
@@ -82,8 +78,7 @@ services:
     container_name: clickhouse04
     hostname: clickhouse04
     networks:
-      clickhouse-network:
-        ipv4_address: 172.23.0.14
+      clickhouse-network: {}
       shared: {}
     volumes:
       - ${CLICKHOUSE_CONFIGS_FOLDER:-./configs}/clickhouse04/config.xml:/etc/clickhouse-server/config.xml:ro
@@ -119,6 +114,4 @@ networks:
     name: music-stream-network
   clickhouse-network:
     name: clickhouse-network
-    ipam:
-      config:
-        - subnet: 172.23.0.0/24
+

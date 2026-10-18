@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pendulum
 from airflow.sdk import DAG, Variable, cross_downstream, get_current_context, task
 from src.pipelines import (
@@ -41,7 +39,7 @@ BRG_PIPELINES = (
 kafka_settings = KafkaSettings()
 KAFKA_EVENTS_TASK_IDS = (
     (f"load_kafka_events_partition_{i}", i)
-    for i in range(0, kafka_settings.music_kafka_num_partitions)
+    for i in range(kafka_settings.music_kafka_num_partitions)
 )
 
 
@@ -80,12 +78,12 @@ def create_load_fct_events_task(task_id, num_partition):
 
 
 # [timestamp_start, timestamp_end)
-first_date = pendulum.datetime(2026, 9, 28, 11, 31, tz="Europe/Moscow")
+first_date = pendulum.datetime(2026, 10, 17, 11, 30, tz="UTC")
 
 dag = DAG(
     "etl_msf",
     schedule="@hourly",
-    start_date=pendulum.datetime(2026, 9, 28, 11, 50, tz="Europe/Moscow"),
+    start_date=pendulum.datetime(2026, 10, 18, 9, 00, tz="UTC"),
     catchup=False,
     max_active_runs=1,
 )
@@ -97,14 +95,13 @@ with dag:
         context = get_current_context()
 
         return {
-            "timestamp_start": datetime.fromisoformat(
+            "timestamp_start": pendulum.parse(
                 Variable.get(
-                    "etl_msf_last_timestamp_end", default=first_date.isoformat()
+                    "etl_msf_last_timestamp_end",
+                    default=first_date.isoformat(),
                 )
-            ),
-            "timestamp_end": context["data_interval_start"].in_timezone(
-                "Europe/Moscow"
-            ),
+            ).in_timezone("UTC"),
+            "timestamp_end": context["data_interval_start"].in_timezone("UTC"),
         }
 
     @task(task_id="swap_timestamp")
