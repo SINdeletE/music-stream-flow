@@ -108,6 +108,7 @@ services:
       # 02 still contains a PostgreSQL BEGIN/COMMIT placeholder; do not load it.
       - ../sql/dwh/ddl/01-create.sql:/init/sql/01-create.sql:ro
       - ../sql/dwh/ddl/03-staging.sql:/init/sql/03-staging.sql:ro
+      - ../sql/dwh/ddl/04-seeds.sql:/init/sql/04-seeds.sql:ro
 
 networks:
   shared:

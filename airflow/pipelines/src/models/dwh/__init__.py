@@ -1,4 +1,4 @@
-"""Python row models matching sql/dwh/ddl/01-create.sql."""
+"""Python row models matching the DWH and staging DDL."""
 
 from .base import ClickHouseModel
 from .brg_artist_release import BrgArtistRelease
@@ -16,6 +16,9 @@ from .dim_release import DimRelease
 from .dim_track import DimTrack
 from .etl_loads import EtlLoad
 from .fct_events import FctEvent
+from .stg_batch import StgBatch
+from .stg_dataset import DatasetRef, StgDataset
+from .stg_missing_dimension_id import StgMissingDimensionId
 
 __all__ = [
     "BrgArtistRelease",
@@ -24,6 +27,7 @@ __all__ = [
     "BrgTrackGenre",
     "BrgTrackRelease",
     "ClickHouseModel",
+    "DatasetRef",
     "DimAppRelease",
     "DimArtist",
     "DimDevice",
@@ -34,4 +38,7 @@ __all__ = [
     "DimTrack",
     "EtlLoad",
     "FctEvent",
+    "StgBatch",
+    "StgDataset",
+    "StgMissingDimensionId",
 ]

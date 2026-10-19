@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -21,6 +22,9 @@ from src.loaders import (
     DimTrackLoader,
     EtlLoadLoader,
     FctEventLoader,
+    StgBatchLoader,
+    StgDatasetLoader,
+    StgMissingDimensionIdLoader,
 )
 
 from tests.integration.fixtures.clickhouse import clickhouse_client
@@ -41,6 +45,9 @@ LOADERS = (
     BrgArtistReleaseLoader,
     FctEventLoader,
     EtlLoadLoader,
+    StgDatasetLoader,
+    StgBatchLoader,
+    StgMissingDimensionIdLoader,
 )
 
 
@@ -205,6 +212,48 @@ def make_loader_batches() -> dict[type[ClickHouseLoader], list[dict[str, object]
                 "error_msg": "Test message" if index else None,
             }
         )
+        stored_at = datetime.now(UTC).replace(microsecond=0) + timedelta(seconds=index)
+        cases[StgDatasetLoader].append(
+            {
+                "source": "fct_events" if index else "collect",
+                "dag_id": f"test_dag_{index}",
+                "run_id": f"test_run_{index}",
+                "task_id": f"test_stage_{index}",
+                "interval_start": timestamp - timedelta(hours=1),
+                "interval_end": timestamp,
+                "dataset_id": entity_id,
+                "created_at": timestamp.replace(microsecond=123456),
+                "batch_count": index,
+                "row_count": index + 1,
+                "dimension_counts": {"track": index, "device": index + 2},
+                "topic": "music-events 🎵" if index else None,
+                "partition": 1 if index else None,
+                "committed_offset": 0 if index else None,
+                "first_offset": 2 if index else None,
+                "next_offset": 3 if index else None,
+                "data_expires_at": stored_at + timedelta(days=3) if index else None,
+            }
+        )
+        cases[StgBatchLoader].append(
+            {
+                "dataset_id": entity_id,
+                "batch_number": index,
+                "payload": json.dumps(
+                    [{"name": f"Track №{index} 🎵"}], ensure_ascii=False
+                ),
+                "row_count": index + 1,
+                "next_offset": 0 if index else None,
+                "stored_at": stored_at,
+            }
+        )
+        cases[StgMissingDimensionIdLoader].append(
+            {
+                "dataset_id": entity_id,
+                "dimension": "device" if index else "track",
+                "entity_id": UUID(int=300 + index),
+                "stored_at": stored_at,
+            }
+        )
     return cases
 
 
@@ -237,6 +286,7 @@ async def test_clickhouse_loaders_positive_records(
     actual_rows = [
         dict(zip(result.column_names, row, strict=True)) for row in result.result_rows
     ]
-    assert sorted(actual_rows, key=lambda x: int(x["load_id"])) == sorted(
-        expected_rows, key=lambda x: int(x["load_id"])
+    sort_column = "dataset_id" if "dataset_id" in expected_rows[0] else "load_id"
+    assert sorted(actual_rows, key=lambda x: int(x[sort_column])) == sorted(
+        expected_rows, key=lambda x: int(x[sort_column])
     )

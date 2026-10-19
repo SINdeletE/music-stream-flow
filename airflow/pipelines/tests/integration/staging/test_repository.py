@@ -1,8 +1,11 @@
 from contextlib import aclosing
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import pytest
+from src.loaders import StgBatchLoader, StgDatasetLoader, StgMissingDimensionIdLoader
+from src.models.dwh import StgBatch, StgDataset, StgMissingDimensionId
 from src.staging import StagingRepository
 from src.staging.codec import serialize_batch
 from src.staging.registry import SOURCES
@@ -38,6 +41,7 @@ async def test_staging_repository_positive_records(client, source):
     await repository.write_missing(dataset, {"track": {UUID(int=1)}})
     reference = await repository.complete(dataset)
     loaded = await read_dataset(client, reference)
+    assert isinstance(loaded, StgDataset)
     assert loaded.dimension_counts == missing_counts(track=2)
     actual = []
     offsets = []
@@ -51,6 +55,87 @@ async def test_staging_repository_positive_records(client, source):
     assert loaded.batch_count == 2
     assert loaded.row_count == len(batch)
     assert set(reference) == {"dataset_id"}
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_staging_repository_positive_different_storage_times(client):
+    """[integration] Equal payloads and missing UUIDs deduplicate independently of storage time."""
+    repository = StagingRepository(client)
+    dataset = make_dataset()
+    source_batch = make_bridge_batch("track_genre")[0]
+    await repository.write_batch(dataset, source_batch)
+    await repository.write_missing(dataset, {"track": {UUID(int=1)}})
+    reference = await repository.complete(dataset)
+
+    result = await client.query(
+        f"SELECT * FROM {StgBatch.table_to_insert()}", tz_mode="aware"
+    )
+    original_batch = StgBatch(**next(result.named_results()))
+    result = await client.query(
+        f"SELECT * FROM {StgMissingDimensionId.table_to_insert()}", tz_mode="aware"
+    )
+    original_missing = StgMissingDimensionId(**next(result.named_results()))
+    await StgBatchLoader(client).load_batch(
+        [
+            replace(
+                original_batch,
+                stored_at=original_batch.stored_at + timedelta(seconds=1),
+            )
+        ]
+    )
+    await StgMissingDimensionIdLoader(client).load_batch(
+        [
+            replace(
+                original_missing,
+                stored_at=original_missing.stored_at + timedelta(seconds=2),
+            )
+        ]
+    )
+    loaded = await read_dataset(client, reference)
+    assert loaded.dimension_counts == missing_counts(track=1)
+    assert await repository.missing_ids(loaded) == {
+        name: {UUID(int=1)} if name == "track" else set()
+        for name in loaded.dimension_counts
+    }
+    restored = [batch async for batch in repository.read_batches(loaded)]
+    assert len(restored) == 1
+    assert serialize_batch(dataset.source, restored[0][0]) == serialize_batch(
+        dataset.source, source_batch
+    )
+    assert restored[0][1] is None
+    assert loaded.data_expires_at == original_batch.stored_at + timedelta(days=3)
+
+
+@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.parametrize(
+    "overrides", [{"payload": "[]"}, {"row_count": 99}, {"next_offset": 0}]
+)
+async def test_staging_repository_negative_conflicting_batches(client, overrides):
+    """[integration] Conflicting payloads, counts and offsets cannot be read as duplicates."""
+    repository = StagingRepository(client)
+    dataset = make_dataset()
+    await repository.write_batch(dataset, make_bridge_batch("track_genre")[0])
+    reference = await repository.complete(dataset)
+    result = await client.query(
+        f"SELECT * FROM {StgBatch.table_to_insert()}", tz_mode="aware"
+    )
+    original = StgBatch(**next(result.named_results()))
+    await StgBatchLoader(client).load_batch([replace(original, **overrides)])
+    with pytest.raises(RuntimeError):
+        await read_dataset(client, reference)
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_staging_repository_negative_conflicting_metadata(client):
+    """[integration] Different completed manifests for the same dataset remain an error."""
+    repository = StagingRepository(client)
+    dataset = make_dataset()
+    reference = await repository.complete(dataset)
+    await StgDatasetLoader(client).load_batch(
+        [replace(dataset, task_id="conflicting_stage")]
+    )
+    with pytest.raises(RuntimeError):
+        await read_dataset(client, reference)
 
 
 @pytest.mark.asyncio(loop_scope="session")

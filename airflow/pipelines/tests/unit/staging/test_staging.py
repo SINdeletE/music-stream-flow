@@ -10,6 +10,7 @@ from clickhouse_connect.driver.asyncclient import AsyncClient
 from pydantic import ValidationError
 from sqlalchemy import inspect
 from src.extractors import KafkaAnalyticsEventExtractor, TrackExtractor
+from src.models.dwh import StgBatch, StgDataset, StgMissingDimensionId
 from src.models.kafka import AnalyticsEvent
 from src.models.kafka.analytics_event import EventType
 from src.settings import KafkaSettings, OltpSettings
@@ -113,8 +114,80 @@ async def test_staging_repository_negative_write_failure():
     with pytest.raises(RuntimeError):
         await StagingRepository(client).write_batch(dataset, make_batch(dataset.source))
     assert dataset.batch_count == dataset.row_count == 0
+    assert dataset.next_offset is None
     assert client.insert.await_count == 1
-    assert client.insert.await_args.args[0] == "music_dwh.stg_batches_all"
+    arguments = client.insert.await_args.kwargs
+    assert arguments["table"] == StgBatch.table_to_insert()
+    assert arguments["column_names"] == StgBatch.column_names()
+    row = StgBatch(
+        **dict(zip(arguments["column_names"], arguments["data"][0], strict=True))
+    )
+    assert row.dataset_id == dataset.dataset_id
+    assert row.batch_number == 0
+    assert row.row_count == 1
+    assert row.next_offset is None
+    assert row.stored_at.utcoffset() == timedelta(0)
+    assert row.payload == serialize_batch(dataset.source, make_batch(dataset.source))
+
+
+@pytest.mark.asyncio
+async def test_staging_repository_positive_model_inserts():
+    """[unit] Repository inserts modeled batches, UUIDs and the final manifest via loaders."""
+    client = AsyncMock(spec=AsyncClient)
+    client.query.return_value = SimpleNamespace(named_results=lambda: iter(()))
+    repository = StagingRepository(client)
+    dataset = Dataset(
+        source="fct_events",
+        dag_id="dag",
+        run_id="run",
+        task_id="stage",
+        interval_start=NOW,
+        interval_end=NOW,
+    )
+    assert repository.batch_loader.client is client
+    assert repository.missing_id_loader.client is client
+    assert repository.dataset_loader.client is client
+    await repository.write_batch(dataset, [], next_offset=99)
+    await repository.write_missing(dataset, {"track": set()})
+    client.insert.assert_not_called()
+
+    source_batch = make_batch(dataset.source)
+    await repository.write_batch(dataset, source_batch, next_offset=0)
+    assert dataset.batch_count == dataset.row_count == 1
+    assert dataset.next_offset == 0
+    await repository.write_missing(
+        dataset, {"track": {UUID(int=2), UUID(int=1)}, "device": {UUID(int=3)}}
+    )
+    reference = await repository.complete(dataset)
+
+    assert reference == dataset.reference()
+    assert client.insert.await_count == 3
+    for call, model in zip(
+        client.insert.await_args_list,
+        (StgBatch, StgMissingDimensionId, StgDataset),
+        strict=True,
+    ):
+        assert call.kwargs["table"] == model.table_to_insert()
+        assert call.kwargs["column_names"] == model.column_names()
+    batch_call, missing_call, manifest_call = client.insert.await_args_list
+    batch = StgBatch(
+        **dict(zip(StgBatch.column_names(), batch_call.kwargs["data"][0], strict=True))
+    )
+    assert batch.payload == serialize_batch(dataset.source, source_batch)
+    assert batch.next_offset == 0
+    missing = [
+        StgMissingDimensionId(
+            **dict(zip(StgMissingDimensionId.column_names(), row, strict=True))
+        )
+        for row in missing_call.kwargs["data"]
+    ]
+    assert [(row.dimension, row.entity_id) for row in missing] == [
+        ("track", UUID(int=1)),
+        ("track", UUID(int=2)),
+        ("device", UUID(int=3)),
+    ]
+    assert all(row.dataset_id == dataset.dataset_id for row in missing)
+    assert manifest_call.kwargs["data"] == [dataset.to_row()]
 
 
 @pytest.mark.asyncio

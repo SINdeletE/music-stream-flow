@@ -14,6 +14,9 @@ from .dim_release_loader import DimReleaseLoader
 from .dim_track_loader import DimTrackLoader
 from .etl_load_loader import EtlLoadLoader
 from .fct_event_loader import FctEventLoader
+from .stg_batch_loader import StgBatchLoader
+from .stg_dataset_loader import StgDatasetLoader
+from .stg_missing_dimension_id_loader import StgMissingDimensionIdLoader
 
 __all__ = [
     "BrgArtistReleaseLoader",
@@ -32,4 +35,7 @@ __all__ = [
     "DimTrackLoader",
     "EtlLoadLoader",
     "FctEventLoader",
+    "StgBatchLoader",
+    "StgDatasetLoader",
+    "StgMissingDimensionIdLoader",
 ]
