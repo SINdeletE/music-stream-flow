@@ -105,10 +105,10 @@ services:
       - clickhouse-network
     volumes:
       - ./init.sh:/init/init.sh:ro
-      # 02 still contains a PostgreSQL BEGIN/COMMIT placeholder; do not load it.
-      - ../sql/dwh/ddl/01-create.sql:/init/sql/01-create.sql:ro
-      - ../sql/dwh/ddl/03-staging.sql:/init/sql/03-staging.sql:ro
-      - ../sql/dwh/ddl/04-seeds.sql:/init/sql/04-seeds.sql:ro
+      # 0002 still contains a PostgreSQL BEGIN/COMMIT placeholder; do not load it.
+      - ../sql/dwh/ddl/0001-create.sql:/init/sql/0001-create.sql:ro
+      - ../sql/dwh/ddl/0003-staging.sql:/init/sql/0003-staging.sql:ro
+      - ../sql/dwh/ddl/0004-seeds.sql:/init/sql/0004-seeds.sql:ro
 
 networks:
   shared:

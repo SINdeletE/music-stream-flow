@@ -1,5 +1,5 @@
 -- Standalone insertion schema. No replication, Distributed or Keeper defaults.
--- Column names and types follow 01-create.sql and 03-staging.sql.
+-- Column names and types follow 0001-create.sql and 0003-staging.sql.
 CREATE DATABASE music_dwh;
 
 CREATE TABLE music_dwh.dim_device_all

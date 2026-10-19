@@ -6,7 +6,7 @@ from src.models.kafka.analytics_event import EventType
 
 from tests.integration.fixtures.clickhouse import clickhouse_client
 
-SEED_PATH = Path(__file__).resolve().parents[5] / "sql/dwh/ddl/04-seeds.sql"
+SEED_PATH = Path(__file__).resolve().parents[5] / "sql/dwh/ddl/0004-seeds.sql"
 
 
 @pytest.mark.asyncio

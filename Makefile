@@ -1,5 +1,3 @@
-
-
 .PHONY: setup
 setup:
 	docker network create music-stream-network

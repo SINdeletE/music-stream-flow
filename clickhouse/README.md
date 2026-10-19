@@ -28,7 +28,7 @@ directories remain available. XML manages users, so Docker user setup is disable
 ## Schema initialization
 
 `clickhouse-init` waits for all four ClickHouse nodes to become healthy, connects
-to `clickhouse01` as `admin`, applies `sql/dwh/ddl/01-create.sql`, then exits.
+to `clickhouse01` as `admin`, applies `sql/dwh/ddl/0001-create.sql`, then exits.
 `ON CLUSTER company_cluster` distributes the DDL to all nodes. Exit code 0 means
 success; any SQL error stops initialization with a non-zero exit code.
 
@@ -43,8 +43,8 @@ make -C clickhouse init
 ```
 
 This is not a migration runner: `CREATE IF NOT EXISTS` preserves existing tables
-and does not update their definitions. The `02-constraints.sql` and
-`03-indexes.sql` PostgreSQL transaction placeholders are intentionally not mounted.
+and does not update their definitions. The `0002-constraints.sql` PostgreSQL
+transaction placeholder is intentionally not mounted.
 Additional ClickHouse-compatible scripts can be mounted in `/init/sql/`; they run
 in filename order. Initialization has no persistent "already ran" marker, so scripts
 must be safe to reapply.

@@ -1,6 +1,6 @@
 @startuml
 
-' Source: sql/dwh/ddl/01-create.sql. Distributed aliases use the same columns.
+' Source: sql/dwh/ddl/0001-create.sql. Distributed aliases use the same columns.
 ' PK / FK denote logical relationships; ClickHouse does not enforce uniqueness or FKs.
 ' * denotes a non-nullable SQL column; generated SKs can be omitted from INSERT.
 

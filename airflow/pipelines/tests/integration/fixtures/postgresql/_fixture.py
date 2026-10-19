@@ -30,7 +30,7 @@ async def _initialize_database(settings: OltpSettings) -> None:
                 break
 
         try:
-            for path in sorted(DDL_DIRECTORY.glob("*.sql")):
+            for path in sorted(DDL_DIRECTORY.glob("[0-9]*.sql")):
                 await connection.execute(path.read_text(encoding="utf-8"))
         finally:
             await connection.close()

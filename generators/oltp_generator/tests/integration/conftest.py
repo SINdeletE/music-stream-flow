@@ -46,7 +46,7 @@ def postgresql_connection():
                 if monotonic() >= deadline:
                     raise
                 sleep(0.2)
-        for path in sorted(DDL_DIRECTORY.glob("*.sql")):
+        for path in sorted(DDL_DIRECTORY.glob("[0-9]*.sql")):
             connection.execute(path.read_text(encoding="utf-8"))
         yield connection
     finally:

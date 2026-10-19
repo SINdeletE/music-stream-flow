@@ -1,4 +1,4 @@
--- MANUAL RESET: drops all tables defined in 01-create.sql and 03-staging.sql and their data.
+-- MANUAL RESET: drops all tables defined in 0001-create.sql and 0003-staging.sql and their data.
 -- This script must not be included in automatic initialization.
 
 -- Drop Distributed tables before their underlying local tables.

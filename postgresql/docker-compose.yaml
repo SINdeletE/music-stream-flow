@@ -1,22 +1,52 @@
 services:
   music-oltp:
     image: postgres:18.3-alpine
+    command: ["postgres", "-p", "${MUSIC_OLTP_INTERNAL_PORT:-5432}"]
     restart: always
     env_file:
       - .env
     networks:
       - default
       - shared
-    volumes:
-      - ../sql/music_oltp/ddl/01-create.sql:/docker-entrypoint-initdb.d/01-create.sql
-      - ../sql/music_oltp/ddl/02-constraints.sql:/docker-entrypoint-initdb.d/02-constraints.sql
-      - ../sql/music_oltp/ddl/03-indexes.sql:/docker-entrypoint-initdb.d/03-indexes.sql
     environment:
       POSTGRES_USER: ${MUSIC_OLTP_USERNAME}
       POSTGRES_PASSWORD: ${MUSIC_OLTP_PASSWORD}
       POSTGRES_DB: ${MUSIC_OLTP_DATABASE}
     ports:
       - "${MUSIC_OLTP_PORT}:${MUSIC_OLTP_INTERNAL_PORT}"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h 127.0.0.1 -p ${MUSIC_OLTP_INTERNAL_PORT:-5432} -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
+
+  postgresql-init:
+    image: postgres:18.3-alpine
+    env_file:
+      - .env
+    environment:
+      PGHOST: music-oltp
+      PGPORT: ${MUSIC_OLTP_INTERNAL_PORT:-5432}
+      PGUSER: ${MUSIC_OLTP_USERNAME}
+      PGPASSWORD: ${MUSIC_OLTP_PASSWORD}
+      PGDATABASE: ${MUSIC_OLTP_DATABASE}
+      PGCONNECT_TIMEOUT: "5"
+    entrypoint: ["/bin/sh", "/init/init.sh"]
+    restart: "no"
+    depends_on:
+      music-oltp:
+        condition: service_healthy
+    networks:
+      - default
+    volumes:
+      - ./init.sh:/init/init.sh:ro
+      # Only initialization scripts are mounted; drop-all.sql is manual-only.
+      - ../sql/music_oltp/ddl/0001-create.sql:/init/sql/0001-create.sql:ro
+      - ../sql/music_oltp/ddl/0002-constraints.sql:/init/sql/0002-constraints.sql:ro
+      - ../sql/music_oltp/ddl/0003-indexes.sql:/init/sql/0003-indexes.sql:ro
 
 networks:
   shared:
