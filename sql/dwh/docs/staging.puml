@@ -1,0 +1,56 @@
+@startuml
+
+legend left
+  Types are ClickHouse types.
+  * denotes a non-nullable SQL column.
+  PK / FK denote logical keys; ClickHouse does not enforce uniqueness or FKs.
+  Dataset metadata has no TTL.
+  Batches and missing IDs expire 3 days after stored_at.
+endlegend
+
+entity stg_datasets {
+    * dataset_id: UUID <<PK>>
+    --
+    * source: LowCardinality(String)
+    * dag_id: String
+    * run_id: String
+    * task_id: String
+
+    * interval_start: DateTime64(6, 'UTC')
+    * interval_end: DateTime64(6, 'UTC')
+    * created_at: DateTime64(6, 'UTC')
+
+    * batch_count: UInt64
+    * row_count: UInt64
+    * dimension_counts: Map(String, UInt64)
+
+    topic: Nullable(String)
+    partition: Nullable(Int32)
+    committed_offset: Nullable(Int64)
+    first_offset: Nullable(Int64)
+    next_offset: Nullable(Int64)
+    data_expires_at: Nullable(DateTime('UTC'))
+}
+
+entity stg_batches {
+    * dataset_id: UUID <<PK, FK>>
+    * batch_number: UInt64 <<PK>>
+    --
+    * payload: String
+    * row_count: UInt64
+    next_offset: Nullable(Int64)
+    * stored_at: DateTime('UTC')
+}
+
+entity stg_missing_dimension_ids {
+    * dataset_id: UUID <<PK, FK>>
+    * dimension: LowCardinality(String) <<PK>>
+    * entity_id: UUID <<PK>>
+    --
+    * stored_at: DateTime('UTC')
+}
+
+stg_datasets ||--o{ stg_batches : dataset_id
+stg_datasets ||--o{ stg_missing_dimension_ids : dataset_id
+
+@enduml

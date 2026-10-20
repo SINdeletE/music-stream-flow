@@ -68,7 +68,15 @@ DDL: [sql/music_oltp/ddl](sql/music_oltp/ddl). Исходник диаграмм
 
 ![ER-диаграмма аналитической витрины ClickHouse](docs/svg/ER_DWH.svg)
 
-DDL и сиды типов событий: [sql/dwh/ddl](sql/dwh/ddl). Исходник диаграммы: [PlantUML](sql/dwh/docs/ddl.puml). Технические staging-таблицы описаны отдельно в [0003-staging.sql](sql/dwh/ddl/0003-staging.sql).
+DDL и сиды типов событий: [sql/dwh/ddl](sql/dwh/ddl). Исходник диаграммы: [PlantUML](sql/dwh/docs/ddl.puml).
+
+### Staging
+
+Промежуточный слой хранит метаданные наборов, исходные батчи и недостающие UUID измерений. Три таблицы связаны через `dataset_id` и показаны отдельно от аналитической модели.
+
+![ER-диаграмма staging-слоя ClickHouse](docs/svg/ER_Staging.svg)
+
+DDL: [0003-staging.sql](sql/dwh/ddl/0003-staging.sql). Исходник диаграммы: [PlantUML](sql/dwh/docs/staging.puml).
 
 ## Генерация данных
 

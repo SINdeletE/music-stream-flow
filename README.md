@@ -68,7 +68,15 @@ The data mart uses dimensional modeling: one row in `fct_events` represents one 
 
 ![ER diagram of the ClickHouse analytical data mart](docs/svg/ER_DWH.svg)
 
-DDL and event type seed data: [sql/dwh/ddl](sql/dwh/ddl). Diagram source: [PlantUML](sql/dwh/docs/ddl.puml). Technical staging tables are defined separately in [0003-staging.sql](sql/dwh/ddl/0003-staging.sql).
+DDL and event type seed data: [sql/dwh/ddl](sql/dwh/ddl). Diagram source: [PlantUML](sql/dwh/docs/ddl.puml).
+
+### Staging
+
+The staging layer stores dataset metadata, source batches, and missing dimension UUIDs. The three tables are linked by `dataset_id` and are shown separately from the analytical model.
+
+![ER diagram of the ClickHouse staging layer](docs/svg/ER_Staging.svg)
+
+DDL: [0003-staging.sql](sql/dwh/ddl/0003-staging.sql). Diagram source: [PlantUML](sql/dwh/docs/staging.puml).
 
 ## Data Generation
 
