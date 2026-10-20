@@ -1,5 +1,7 @@
 # music-stream-flow
 
+[English](README.md) | [Русский](README.ru.md)
+
 An analytics platform for a music streaming service. The project combines reference data from PostgreSQL and user events from Kafka in a ClickHouse data mart. Apache Airflow orchestrates the loading process.
 
 Two independent generators stand in for a real music application: one populates and updates the OLTP database, while the other produces consistent user sessions and publishes events to Kafka.
