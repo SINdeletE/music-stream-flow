@@ -1,8 +1,9 @@
 PYTHON ?= python3
 VENV := .venv
 VENV_PYTHON := $(VENV)/bin/python
+COMPOSE = docker compose --env-file "$(CURDIR)/.env" -f "$(CURDIR)/docker-compose.yaml"
 
-.PHONY: setup test test-unit test-integration lint lint-fix lint-format
+.PHONY: setup test test-unit test-integration lint lint-fix lint-format dag check up
 
 setup:
 	$(PYTHON) -m venv "$(VENV)"
@@ -36,3 +37,12 @@ lint-fix:
 
 lint-format:
 	"$(VENV_PYTHON)" -m ruff format pipelines
+
+dag:
+	sh ./dag.sh
+
+check:
+	$(COMPOSE) config --quiet
+
+up: dag check
+	$(COMPOSE) up -d --build

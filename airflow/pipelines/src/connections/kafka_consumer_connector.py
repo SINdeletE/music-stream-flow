@@ -23,6 +23,7 @@ class KafkaConsumerConnector:
                 "bootstrap.servers": settings.kafka_bootstrap_servers_url,
                 "group.id": f"{settings.music_kafka_topic_name}_{self.partition}",
                 "enable.auto.commit": False,
+                "enable.partition.eof": True,
                 "auto.offset.reset": "earliest",
             }
         )
