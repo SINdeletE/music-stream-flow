@@ -1,108 +1,108 @@
 # music-stream-flow
 
-Аналитическая платформа для музыкального стримингового сервиса. Проект объединяет справочные данные из PostgreSQL и пользовательские события из Kafka в витрине ClickHouse. Загрузкой управляет Apache Airflow.
+An analytics platform for a music streaming service. The project combines reference data from PostgreSQL and user events from Kafka in a ClickHouse data mart. Apache Airflow orchestrates the loading process.
 
-Вместо реального музыкального приложения используются два независимых генератора: один наполняет и обновляет OLTP-базу, второй формирует согласованные пользовательские сессии и отправляет события в Kafka.
+Two independent generators stand in for a real music application: one populates and updates the OLTP database, while the other produces consistent user sessions and publishes events to Kafka.
 
-## Что можно анализировать
+## Analytics
 
-В [analytics/queries](analytics/queries) находятся SQL-запросы для получения:
+The SQL queries in [analytics/queries](analytics/queries) provide:
 
-- топа моделей устройств и операционных систем по количеству сессий;
-- топа треков по выборам и лайкам, в том числе за заданный период;
-- топа альбомов и исполнителей по выборам треков;
-- средней продолжительности сессии в целом и по пользователям.
+- Top device models and operating systems by session count.
+- Top tracks by selections and likes, including rankings for a specified period.
+- Top albums and artists by track selections.
+- Average session duration, both overall and per user.
 
-Требования описаны в [analytics/mart_spec.md](analytics/mart_spec.md). В этой версии выбор трека (`track_selected`) используется как показатель прослушивания: фактическое время воспроизведения не измеряется.
+Requirements are documented in [analytics/mart_spec.md](analytics/mart_spec.md). In this version, track selection (`track_selected`) is used as a proxy for listening; actual playback duration is not measured.
 
-## Архитектура
+## Architecture
 
-### Контекст системы — C4 L1
+### System Context — C4 L1
 
-Музыкальный сервис передаёт события в аналитическую платформу, а платформа читает из него справочные данные.
+The music service sends events to the analytics platform, which also reads reference data from the service.
 
-![C4 L1: музыкальный сервис и аналитическая платформа](docs/svg/C4_L1.svg)
+![C4 L1: music service and analytics platform](docs/svg/C4_L1.svg)
 
-### Контейнеры — C4 L2
+### Containers — C4 L2
 
-![C4 L2: приложения, сбор аналитики, Kafka, Airflow и хранилища](docs/svg/C4_L2.svg)
+![C4 L2: applications, analytics collection, Kafka, Airflow, and data stores](docs/svg/C4_L2.svg)
 
-Диаграммы описывают целевую архитектуру: клиентские приложения и backend передают события в `Analytics Collector`, который публикует их в Kafka. Приложения, backend и collector в этом репозитории не реализованы; в запускаемом стенде их заменяют генераторы, и event-generator пишет непосредственно в Kafka.
+The diagrams show the target architecture: client applications and the backend send events to an `Analytics Collector`, which publishes them to Kafka. The applications, backend, and collector are not implemented in this repository. In the runnable environment, generators replace them, and the event generator writes directly to Kafka.
 
-- **PostgreSQL** — операционные данные: устройства, история ОС, версии приложения, установки, музыкальный каталог и связи между сущностями.
-- **Kafka** — поток JSON-событий в топике `music-events` по умолчанию. Ключ сообщения — `session_id`, поэтому события одной сессии попадают в одну партицию.
-- **Airflow** — инкрементальная пакетная загрузка, разрешение зависимостей и контроль успешности этапов.
-- **ClickHouse** — аналитическое хранилище: два шарда по две реплики, реплицируемые таблицы и Distributed-обёртки. Для координации используется ZooKeeper.
-- **Python** — генераторы и ETL: Faker, Psycopg, SQLAlchemy/asyncpg, clickhouse-connect и confluent-kafka.
+- **PostgreSQL** — operational data: devices, OS history, application releases, installations, the music catalog, and relationships between entities.
+- **Kafka** — a stream of JSON events in the `music-events` topic by default. Messages are keyed by `session_id`, so events from the same session go to the same partition.
+- **Airflow** — incremental batch loading, dependency resolution, and monitoring of stage completion.
+- **ClickHouse** — an analytical warehouse with two shards and two replicas per shard, replicated tables, and Distributed wrappers. ZooKeeper provides coordination.
+- **Python** — generators and ETL using Faker, Psycopg, SQLAlchemy/asyncpg, clickhouse-connect, and confluent-kafka.
 
-### Как проходит загрузка
+### Loading Workflow
 
-DAG [`etl_msf`](airflow/pipelines/etl_msf.py) выполняется по часовому расписанию и допускает один активный запуск:
+The [`etl_msf`](airflow/pipelines/etl_msf.py) DAG runs hourly and allows one active run at a time:
 
-1. `fix_timestamp` фиксирует интервал `[timestamp_start, timestamp_end)` от последней успешно обработанной границы.
-2. Параллельные staging-задачи читают связи из OLTP и события из каждой Kafka-партиции. Сохраняют исходные батчи в ClickHouse и собирают UUID измерений, которых ещё нет в DWH. Kafka offset на этом этапе не подтверждается.
-3. `collect` объединяет недостающие UUID из всех staging-наборов. Между задачами передаются только ссылки `dataset_id`, а не сами батчи.
-4. Задачи измерений загружают записи из OLTP по временному интервалу **или** по недостающим UUID. Так догружаются зависимости, даже если их текущий `updated_at` находится вне интервала.
-5. Загружаются bridge-таблицы, затем факты по Kafka-партициям — из уже сохранённых staging-батчей. Трансформеры находят суррогатные ключи; offset подтверждается только после успешной вставки соответствующего батча фактов.
-6. `swap_timestamp` сохраняет новую границу только после успеха всех загрузок. Результаты загрузок и счётчики записей фиксируются в `etl_loads`.
+1. `fix_timestamp` establishes the `[timestamp_start, timestamp_end)` interval, starting from the last successfully processed boundary.
+2. Parallel staging tasks read relationships from OLTP and events from each Kafka partition. They save the source batches in ClickHouse and collect UUIDs of dimensions not yet present in the DWH. Kafka offsets are not committed at this stage.
+3. `collect` combines the missing UUIDs from all staging datasets. Tasks exchange only `dataset_id` references, not the batches themselves.
+4. Dimension tasks load OLTP records by time interval **or** by missing UUIDs. This loads dependencies even when their current `updated_at` falls outside the interval.
+5. Bridge tables are loaded first, followed by facts for each Kafka partition, using the saved staging batches. Transformers resolve surrogate keys; an offset is committed only after the corresponding fact batch has been inserted successfully.
+6. `swap_timestamp` saves the new boundary only after all loads succeed. Load results and row counts are recorded in `etl_loads`.
 
-Содержимое staging-батчей и наборы недостающих UUID имеют TTL 3 дня; метаданные завершённых наборов сохраняются без TTL. Просроченные и неполные наборы отклоняются, а не считаются пустыми.
+Staging batch contents and missing UUID sets have a three-day TTL. Metadata for completed datasets is retained without a TTL. Expired or incomplete datasets are rejected rather than treated as empty.
 
-Загрузка основана на временных метках, а не на чтении WAL/CDC. Измерения отражают текущее состояние источника, не историческое состояние на момент события. Общая транзакция между Kafka и ClickHouse отсутствует: при сбое между вставкой и commit возможна повторная обработка; ReplacingMergeTree устраняет совпадающие записи при слияниях, а аналитические запросы используют `FINAL`.
+Extraction is timestamp-based rather than WAL-based CDC. Dimensions reflect the current source state, not the historical state at the time of an event. There is no shared transaction between Kafka and ClickHouse: a failure between insertion and offset commit can cause reprocessing. ReplacingMergeTree removes matching records during merges, and analytical queries use `FINAL`.
 
-## Модели данных
+## Data Models
 
 ### OLTP
 
-Нормализованная схема хранит музыкальный каталог, устройства и установки. Версии ОС представлены отдельной историей. Генератор создаёт основные сущности и их связи согласованно, соблюдая внешние ключи.
+The normalized schema stores the music catalog, devices, and installations. OS versions are maintained in a separate history table. The generator creates entities and their relationships consistently, respecting foreign key constraints.
 
-![ER-диаграмма операционной базы PostgreSQL](docs/svg/ER_OLTP.svg)
+![ER diagram of the PostgreSQL operational database](docs/svg/ER_OLTP.svg)
 
-DDL: [sql/music_oltp/ddl](sql/music_oltp/ddl). Исходник диаграммы: [PlantUML](sql/music_oltp/docs/ddl.puml).
+DDL: [sql/music_oltp/ddl](sql/music_oltp/ddl). Diagram source: [PlantUML](sql/music_oltp/docs/ddl.puml).
 
 ### DWH
 
-Витрина использует размерное моделирование: одна строка `fct_events` соответствует одному событию. Измерения `dim_*` содержат описательный контекст, bridge-таблицы `brg_*` — связи многие-ко-многим, а `etl_loads` — аудит загрузок. UUID источников сохраняются рядом с суррогатными ключами измерений.
+The data mart uses dimensional modeling: one row in `fct_events` represents one event. The `dim_*` dimensions provide descriptive context, `brg_*` bridge tables represent many-to-many relationships, and `etl_loads` stores load audit records. Source UUIDs are retained alongside dimension surrogate keys.
 
-![ER-диаграмма аналитической витрины ClickHouse](docs/svg/ER_DWH.svg)
+![ER diagram of the ClickHouse analytical data mart](docs/svg/ER_DWH.svg)
 
-DDL и сиды типов событий: [sql/dwh/ddl](sql/dwh/ddl). Исходник диаграммы: [PlantUML](sql/dwh/docs/ddl.puml). Технические staging-таблицы описаны отдельно в [0003-staging.sql](sql/dwh/ddl/0003-staging.sql).
+DDL and event type seed data: [sql/dwh/ddl](sql/dwh/ddl). Diagram source: [PlantUML](sql/dwh/docs/ddl.puml). Technical staging tables are defined separately in [0003-staging.sql](sql/dwh/ddl/0003-staging.sql).
 
-## Генерация данных
+## Data Generation
 
-- [`oltp_generator`](generators/oltp_generator) добавляет и обновляет данные PostgreSQL. Для потоков INSERT и UPDATE отдельно задаются лимиты, периоды и интервалы. Устройства, совместимые ОС и жанры берутся из общих [каталогов](generators/catalogs); создание связей не расходует лимиты родительских сущностей.
-- [`event_generator`](generators/event_generator) читает существующие установки и доступные треки из OLTP. Формирует последовательности `session_started → track_selected → [track_liked / track_disliked] → … → session_ended`. Контекст устройства и приложения постоянен внутри сессии; анонимные сессии не оставляют реакции.
+- [`oltp_generator`](generators/oltp_generator) inserts and updates PostgreSQL data. INSERT and UPDATE streams have independent limits, periods, and intervals. Devices, compatible operating systems, and genres come from shared [catalogs](generators/catalogs); creating relationships does not consume parent entity quotas.
+- [`event_generator`](generators/event_generator) reads existing installations and available tracks from OLTP. It produces sequences such as `session_started → track_selected → [track_liked / track_disliked] → … → session_ended`. Device and application context remains fixed throughout a session; anonymous sessions do not produce reactions.
 
-Оба генератора работают в отдельных контейнерах, а их настройки находятся в `generators/.env`. Количество событий, темп отправки и число активных сессий регулируются независимо от потока OLTP-данных.
+The generators run in separate containers and are configured through `generators/.env`. Event quotas, delivery intervals, and the number of active sessions can be adjusted independently of the OLTP data stream.
 
-## Структура репозитория
+## Repository Structure
 
-- [airflow](airflow) — DAG, коннекторы, extractor-ы, transformer-ы, mapper-ы, loader-ы, staging и тесты ETL.
-- [analytics](analytics) — требования к витрине, аналитические SQL-запросы и их тесты.
-- [generators](generators) — генераторы OLTP и событий, общие каталоги и Docker Compose.
-- [sql](sql) — DDL, сиды и ER-диаграммы PostgreSQL и ClickHouse.
-- [postgresql](postgresql), [clickhouse](clickhouse), [kafka](kafka) — конфигурация и запуск инфраструктуры.
-- [docs](docs) — исходники C4-диаграмм и SVG-изображения архитектуры и моделей данных.
+- [airflow](airflow) — the DAG, connectors, extractors, transformers, mappers, loaders, staging, and ETL tests.
+- [analytics](analytics) — data mart requirements, analytical SQL queries, and query tests.
+- [generators](generators) — OLTP and event generators, shared catalogs, and Docker Compose.
+- [sql](sql) — PostgreSQL and ClickHouse DDL, seed data, and ER diagrams.
+- [postgresql](postgresql), [clickhouse](clickhouse), [kafka](kafka) — infrastructure configuration and startup.
+- [docs](docs) — C4 diagram sources and SVG images of the architecture and data models.
 
-## Быстрый старт
+## Quick Start
 
-Требуются Docker с Docker Compose и `make`. Все команды ниже выполняются из корня репозитория.
+Docker with Docker Compose and `make` are required. Run all commands below from the repository root.
 
-### 1. Настроить окружение
+### 1. Configure the Environment
 
-Создайте `.env` на основе `.env.example` в каталогах `airflow`, `clickhouse`, `generators`, `kafka` и `postgresql`. Согласуйте имена БД, пользователей, пароли, топик и число Kafka-партиций между сервисами.
+Create a `.env` file from `.env.example` in each of the `airflow`, `clickhouse`, `generators`, `kafka`, and `postgresql` directories. Keep database names, usernames, passwords, the topic name, and the Kafka partition count consistent across services.
 
-Для подключений между контейнерами используйте внутренние адреса общей сети: `music-oltp:5432`, `clickhouse01:8123` и `kafka:9092` при стандартных внутренних портах. Опубликованные порты хоста предназначены для подключений с компьютера, не из Airflow или генераторов.
+For connections between containers, use addresses on the shared network: `music-oltp:5432`, `clickhouse01:8123`, and `kafka:9092` with the default internal ports. Published host ports are for connections from your computer, not from Airflow or the generators.
 
-### 2. Создать общую сеть
+### 2. Create the Shared Network
 
-Если сеть `music-stream-network` ещё не существует, создайте её из корневой папки:
+If the `music-stream-network` network does not exist yet, create it from the repository root:
 
 ```bash
 make setup
 ```
 
-### 3. Запустить источники и хранилище
+### 3. Start the Sources and Warehouse
 
 ```bash
 make -C postgresql up
@@ -110,33 +110,33 @@ make -C clickhouse up
 make -C kafka up
 ```
 
-Дождитесь успешного завершения `postgresql-init`, `clickhouse-init` и `kafka-init`: они применяют SQL-схемы, добавляют типы событий и создают Kafka-топик.
+Wait for `postgresql-init`, `clickhouse-init`, and `kafka-init` to finish successfully. They apply the SQL schemas, seed the event types, and create the Kafka topic.
 
-### 4. Запустить генераторы
+### 4. Start the Generators
 
 ```bash
 make -C generators up
 ```
 
-Event-generator ждёт появления подходящих данных OLTP и не создаёт случайные ссылки на отсутствующие сущности.
+The event generator waits for suitable OLTP data and does not generate random references to missing entities.
 
-### 5. Запустить Airflow
+### 5. Start Airflow
 
 ```bash
 make -C airflow up
 ```
 
-Команда вызывает `dag.sh`, переносит содержимое `airflow/pipelines` в `airflow/dags` и собирает контейнеры. После изменения кода повторно перенести DAG и pipeline можно командой `make -C airflow dag`.
+This command runs `dag.sh`, copies the contents of `airflow/pipelines` into `airflow/dags`, and builds the container images. After changing the code, copy the DAG and pipeline code again with `make -C airflow dag`.
 
-Откройте [Airflow UI](http://localhost:8080), войдите с учётными данными из `airflow/.env`, включите DAG `etl_msf` и запустите его. Перед первым запуском проверьте начальные даты в [etl_msf.py](airflow/pipelines/etl_msf.py); последняя успешная граница хранится в Airflow Variable `etl_msf_last_timestamp_end`.
+Open the [Airflow UI](http://localhost:8080), sign in with the credentials from `airflow/.env`, enable the `etl_msf` DAG, and trigger a run. Before the first run, check the initial dates in [etl_msf.py](airflow/pipelines/etl_msf.py). The last successful boundary is stored in the Airflow Variable `etl_msf_last_timestamp_end`.
 
-### 6. Выполнить аналитические запросы
+### 6. Run Analytical Queries
 
-Подключитесь к ClickHouse и выполните нужный файл из [analytics/queries](analytics/queries). В начале файлов заданы примеры параметров периода и лимита. Измените их и выполняйте файл как SQL-скрипт в одной сессии: отдельный HTTP-запрос ClickHouse не принимает несколько SQL-выражений сразу.
+Connect to ClickHouse and run a query file from [analytics/queries](analytics/queries). Each file begins with example time range and limit parameters. Adjust them and execute the file as a SQL script within one session: a single ClickHouse HTTP request does not accept multiple SQL statements.
 
-## Тестирование
+## Testing
 
-Для локальных Python-тестов требуется Python 3.14. Интеграционные проверки используют временные контейнеры через Testcontainers и требуют работающий Docker; рабочие базы и Kafka проекта не используются.
+Local Python tests require Python 3.14. Integration tests use temporary containers through Testcontainers and require Docker to be running. They do not use the project's application databases or Kafka instance.
 
 ```bash
 make -C airflow setup PYTHON=python3.14
@@ -147,11 +147,11 @@ make -C analytics setup PYTHON=python3.14
 make -C analytics test
 ```
 
-У каждого генератора также есть собственные команды `setup`, `test`, `test-unit`, `test-integration` и `lint` в его Makefile.
+Each generator also provides its own `setup`, `test`, `test-unit`, `test-integration`, and `lint` targets in its Makefile.
 
-## Завершение работы
+## Shutdown
 
-Остановить и удалить контейнеры без явного удаления томов:
+Stop and remove the containers without explicitly deleting volumes:
 
 ```bash
 make -C generators down
@@ -161,7 +161,7 @@ make -C clickhouse down
 make -C postgresql down
 ```
 
-Если общая сеть больше не нужна и к ней не подключены другие контейнеры, удалите её отдельно из корневой папки:
+If the shared network is no longer needed and no other containers are attached to it, remove it separately from the repository root:
 
 ```bash
 make clean
