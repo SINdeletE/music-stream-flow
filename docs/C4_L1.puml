@@ -1,8 +1,11 @@
 @startuml C4-L1-music-stream-flow
-!include <C4/C4_Container>
+!include <C4/C4_Context>
 Person(userAlias, "User", "Service user")
 
 System(musicaAlias, "Music", "Music Service")
+System(musicStreamFlowAlias, "Music stream flow", "Collects and analyzes music service activity")
 
 Rel(userAlias, musicaAlias, "Uses")
+Rel(musicaAlias, musicStreamFlowAlias, "Sends analytics events")
+Rel(musicStreamFlowAlias, musicaAlias, "Reads reference data")
 @enduml

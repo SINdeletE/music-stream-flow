@@ -14,6 +14,8 @@ System_Boundary(musicaAlias, "Musica", "Music Service") {
 }
 
 System_Boundary(musicStreamFlowAlias, "Music stream flow", "Musica Analytics Service") {
+    Container(musicaAnalyticsCollectorAlias, "Analytics Collector", "HTTPS API", "Receives analytics events from clients and backend and publishes them to Kafka")
+
     Container(musicaDWHDatabaseAlias, "DWH Database", "Clickhouse", "Musica Analytics DWH Database")
 
     Container(musicaEventBusDatabaseAlias, "Analytics event bus", "Kafka", "Musica Analytics event bus")
@@ -30,11 +32,17 @@ Rel(musicaIOSAlias, musicaBackendAlias, "Uses")
 Rel(musicaAndroidAlias, musicaBackendAlias, "Uses")
 Rel(musicaDesktopAlias, musicaBackendAlias, "Uses")
 
+Rel(musicaWebAppAlias, musicaAnalyticsCollectorAlias, "Sends analytics\nevents", "HTTPS")
+Rel(musicaIOSAlias, musicaAnalyticsCollectorAlias, "Sends analytics\nevents", "HTTPS")
+Rel(musicaAndroidAlias, musicaAnalyticsCollectorAlias, "Sends analytics\nevents", "HTTPS")
+Rel(musicaDesktopAlias, musicaAnalyticsCollectorAlias, "Sends analytics\nevents", "HTTPS")
+
 Rel(musicaBackendAlias, musicaDatabaseAlias, "Read/Write")
 
 Rel(musicaPipelineOrchestratorDatabaseAlias, musicaDatabaseAlias, "Get lookup tables")
 Rel(musicaPipelineOrchestratorDatabaseAlias, musicaDWHDatabaseAlias, "Actualize lookup tables/Add events")
-Rel(musicaBackendAlias, musicaEventBusDatabaseAlias, "Send events for analytics")
+Rel(musicaBackendAlias, musicaAnalyticsCollectorAlias, "Sends server-side analytics events", "HTTPS")
+Rel(musicaAnalyticsCollectorAlias, musicaEventBusDatabaseAlias, "Publishes analytics events", "Kafka protocol")
 
 Rel(musicaPipelineOrchestratorDatabaseAlias, musicaEventBusDatabaseAlias, "Get events for analytics")
 @enduml
